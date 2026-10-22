@@ -1,18 +1,19 @@
-// Bambu-style image → model wizard. A single modal step:
-//   Preprocessing — crop ratio, thickness, tone/color sliders.
-// Background removal is toggled in the main sidebar (not here), so the wizard just
-// tones/crops the image. On confirm it hands the adjusted image (background intact) +
-// params back; the caller runs the trace/build pipeline (background removal is
-// re-derived there, defaulting to keepBackground = false).
-// Color extraction and recoloring now happen live in the 3D preview, so the
-// wizard no longer asks for a color mode or a filament-customization pass.
+// Asistente estilo Bambu: conversión de imagen a modelo 3D. Un paso modal único:
+//   Preprocesamiento: proporción de recorte, grosor y controles deslizantes de tono/color.
+// La eliminación del fondo se activa/desactiva en la barra lateral principal (no aquí), por lo que
+// este asistente solo ajusta tonos y recorta la imagen. Al confirmar, entrega la imagen ajustada
+// (con el fondo intacto) junto con los parámetros; el proceso llamador ejecuta el flujo de
+// vectorizado y construcción 3D (donde se vuelve a calcular la eliminación de fondo, con valor
+// predeterminado keepBackground = false).
+// La extracción y asignación de colores ahora ocurre en tiempo real en el visor 3D, por lo que
+// este asistente ya no requiere seleccionar modos de color ni perfiles manuales de filamento.
 import type { RgbaImage } from '../image/decode';
 import { preprocessImage } from '../image/adjust';
 import { removeBackground } from '../image/matte';
 import { DEFAULT_PREPROCESS, type CropRatio, type PreprocessParams, type RGB } from '../types';
 
 export interface WizardResult {
-  adjusted: RgbaImage; // cropped + tone-adjusted, background still present
+  adjusted: RgbaImage; // Imagen recortada con ajuste de tono (el fondo original se conserva aquí)
   preprocess: PreprocessParams;
   colorCount: number;
   colorMode: 'normal' | 'limited';
@@ -28,17 +29,17 @@ interface WizardOpts {
 }
 
 const SLIDERS: [keyof PreprocessParams, string][] = [
-  ['exposure', 'Exposure'],
-  ['contrast', 'Contrast'],
-  ['saturation', 'Saturation'],
-  ['brightness', 'Brightness'],
-  ['whiteBalance', 'White Balance'],
-  ['highlights', 'Highlights'],
-  ['shadows', 'Shadows'],
+  ['exposure', 'Exposición'],
+  ['contrast', 'Contraste'],
+  ['saturation', 'Saturación'],
+  ['brightness', 'Brillo'],
+  ['whiteBalance', 'Balance de Blancos'],
+  ['highlights', 'Altas Luces'],
+  ['shadows', 'Sombras'],
 ];
 
 const RATIOS: [CropRatio, string][] = [
-  ['free', 'Free'],
+  ['free', 'Libre'],
   ['1:1', '1:1'],
   ['4:3', '4:3'],
   ['3:2', '3:2'],
@@ -47,9 +48,9 @@ const RATIOS: [CropRatio, string][] = [
 
 const ALPHA_THRESHOLD = 128;
 
-/** True if the image would still have foreground after background removal, i.e.
- *  the build pipeline would find an outline to trace. Keeping the background
- *  means every pixel is foreground, so an outline always exists. */
+/** Devuelve verdadero si la imagen aún conserva primer plano tras remover el fondo; es decir,
+ *  si el motor de construcción geométrica encontrará un contorno válido para trazar la pieza.
+ *  Mantener el fondo implica que cada píxel cuenta como figura, por lo que siempre habrá silueta. */
 function hasOutline(img: RgbaImage, keepBackground: boolean): boolean {
   if (keepBackground) return true;
   const clone: RgbaImage = {
@@ -57,10 +58,10 @@ function hasOutline(img: RgbaImage, keepBackground: boolean): boolean {
     width: img.width,
     height: img.height,
   };
-  removeBackground(clone); // mutates the clone, never the live preview image
+  removeBackground(clone); // Modifica solo el clon en memoria, nunca la imagen de vista previa activa
   let fg = 0;
   for (let p = 3; p < clone.data.length; p += 4) if (clone.data[p] >= ALPHA_THRESHOLD) fg++;
-  return fg > 8; // a few stray pixels won't trace into a usable region
+  return fg > 8; // Unos pocos píxeles dispersos o ruido no conforman una región imprimible
 }
 
 function imageToCanvas(img: RgbaImage): HTMLCanvasElement {
@@ -86,42 +87,42 @@ export function runWizard(opts: WizardOpts) {
     opts.onCancel?.();
   };
 
-  // Adjusted image (background intact) for the current params.
+  // Genera la imagen ajustada (con el fondo intacto) utilizando los parámetros actuales
   const adjusted = () => preprocessImage(opts.baseImage, params);
 
-  // ---------- Preprocessing ----------
+  // ---------- Preprocesamiento de Geometría y Tono ----------
   function stepPreprocess() {
     overlay.innerHTML = `
       <div class="wz-modal lg">
-        <div class="wz-head">Image Preprocessing</div>
+        <div class="wz-head">Preprocesamiento de Imagen · SHAMMAH Studio</div>
         <div class="wz-body">
           <div class="wz-left">
             <div class="wz-canvas checker" id="wzPrev"></div>
             <div class="wz-info">
               <div class="wz-info-title">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg>
-                What kind of image works best
+                ¿Qué tipo de imagen funciona mejor?
               </div>
               <ul>
-                <li><strong>Simple, flat colors</strong> with bold, clearly separated shapes.</li>
-                <li><strong>2D illustrations</strong>, logos, icons or clipart convert best.</li>
+                <li><strong>Colores sólidos y planos</strong> con formas bien contrastadas y separadas.</li>
+                <li><strong>Logos 2D, vectores, iconos o clipart</strong> ofrecen la vectorización más limpia.</li>
               </ul>
-              <p class="wz-info-warn"><strong>Don't work well:</strong> photos of real objects with shadows, gradients or texture usually won't convert.</p>
-              <p>Missing details after processing? Turn up <strong>Contrast</strong> and <strong>Exposure</strong> to make the image bolder and bring them back.</p>
+              <p class="wz-info-warn"><strong>No recomendado:</strong> Fotografías de objetos reales con sombras graduales o texturas complejas.</p>
+              <p>¿Faltan detalles en la silueta? Sube el <strong>Contraste</strong> y la <strong>Exposición</strong> para definir los trazos.</p>
             </div>
           </div>
           <div class="wz-controls">
-            <div class="wz-label">Crop Ratio</div>
+            <div class="wz-label">Proporción de Recorte</div>
             <div class="seg" id="wzRatio">${RATIOS.map(
               ([k, l]) => `<button data-r="${k}">${l}</button>`,
             ).join('')}</div>
 
             <div class="wz-row spread">
-              <span class="wz-label">Image Thickness</span>
+              <span class="wz-label">Grosor de Relieve / Imagen</span>
               <span class="wz-num"><input type="number" id="wzThick" min="0.2" max="10" step="0.2" /> mm</span>
             </div>
 
-            <div class="wz-label">Image Adjustment</div>
+            <div class="wz-label">Ajuste de Tono y Color</div>
             ${SLIDERS.map(
               ([k, l]) => `
               <div class="wz-adj">
@@ -133,18 +134,19 @@ export function runWizard(opts: WizardOpts) {
           </div>
         </div>
         <div class="wz-foot">
-          <span class="wz-error" id="wzErr" hidden>No outline found. Adjust the image and try again.</span>
-          <button id="wzCancel">Cancel</button>
-          <button class="primary" id="wzDone">Confirm</button>
+          <span class="wz-error" id="wzErr" hidden>No se detectó un contorno válido. Ajusta la imagen o el contraste e intenta de nuevo.</span>
+          <button id="wzCancel">Cancelar</button>
+          <button class="primary" id="wzDone">Confirmar e Importar</button>
         </div>
       </div>`;
 
     const prev = overlay.querySelector<HTMLElement>('#wzPrev')!;
     const done = overlay.querySelector<HTMLButtonElement>('#wzDone')!;
     const err = overlay.querySelector<HTMLElement>('#wzErr')!;
-    // Mirror the build pipeline's foreground check so the user can't confirm an
-    // image (e.g. one darkened until it's all background) that would silently
-    // trace into nothing.
+    
+    // Replica la verificación de silueta del motor de renderizado para evitar que
+    // el usuario confirme una imagen (p. ej. oscurecida en exceso) que no produciría
+    // ningún volumen tridimensional imprimible.
     const redraw = () => {
       const a = adjusted();
       prev.innerHTML = '';
