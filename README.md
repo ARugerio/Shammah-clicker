@@ -1,9 +1,7 @@
 # Clicker Generator
 
 Cambios
-
-**Live site:** https://vostoklabs.github.io/Clicker-Generator/
-
+Nuevos cambios 
 ## How it works
 
 1. Upload an image — it's quantized into a small color palette and traced into 2D regions.
