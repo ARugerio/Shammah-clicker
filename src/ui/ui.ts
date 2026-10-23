@@ -1,14 +1,10 @@
 import type { BaseShapeKind, EditMode, EdgeSetting, EdgeStyle, KeychainParams, PaletteEntry, SwitchPlacement, ViewMode, RGB } from '../types';
 import { FILAMENTS } from '../types';
 import type { SectionAxis } from '../viewer/viewer';
-import { SAMPLES } from '../image/sample';
 import type { RgbaImage } from '../image/decode';
 import type { FontOption } from '../image/letter';
 import { FONT_OPTIONS, loadBundledFonts } from '../image/letter';
 import { LUCIDE_ICONS, buildSvg, svgDataUrl } from '../image/lucideIcons';
-
-/** Ruta base para recursos estáticos (logos, favicon, etc.). */
-const ASSET_BASE = import.meta.env.BASE_URL;
 
 /** Tolerancia neutra base (mm). El control muestra la desviación sobre este número. */
 const BASE_SOCKET_TOL = 0.4;
