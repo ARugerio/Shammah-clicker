@@ -52,9 +52,9 @@ export function Preview3D({ geometry }: Preview3DProps) {
 
       // Material and mesh
       const material = new THREE.MeshStandardMaterial({
-        color: 0xf5f5f5,
-        roughness: 0.4,
-        metalness: 0.1,
+        color: 0xffffff,
+        roughness: 0.3,
+        metalness: 0,
       })
 
       const mesh = new THREE.Mesh(geometry, material)
