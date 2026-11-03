@@ -12,27 +12,6 @@ function clampParams(params: LetterGeometryParams): LetterGeometryParams {
   }
 }
 
-function createLetterTexture(letter: string, _size: number): THREE.CanvasTexture {
-  const canvas = document.createElement('canvas')
-  canvas.width = 512
-  canvas.height = 512
-  const ctx = canvas.getContext('2d')!
-
-  ctx.fillStyle = '#ffffff'
-  ctx.fillRect(0, 0, 512, 512)
-
-  ctx.fillStyle = '#333333'
-  ctx.font = 'bold 350px Arial'
-  ctx.textAlign = 'center'
-  ctx.textBaseline = 'middle'
-  ctx.fillText(letter, 256, 256)
-
-  const texture = new THREE.CanvasTexture(canvas)
-  texture.magFilter = THREE.LinearFilter
-  texture.minFilter = THREE.LinearMipmapLinearFilter
-  return texture
-}
-
 export async function generateGeometry(params: LetterGeometryParams): Promise<GeometryResult> {
   if (!params.letter || params.letter.trim() === '') {
     throw new Error('Letter cannot be empty')
@@ -48,11 +27,10 @@ export async function generateGeometry(params: LetterGeometryParams): Promise<Ge
   const stemHeightMm = 7
   const baseHeightMm = 2
 
+  // Cap (white top with letter surface)
   const capGeometry = new THREE.CylinderGeometry(capWidthUnits / 2, capWidthUnits / 2, clamped.topThickness * scale, 32)
-  const capTexture = createLetterTexture(params.letter, clamped.capWidthMm)
   const capMaterial = new THREE.MeshStandardMaterial({
     color: 0xf5f5f5,
-    map: capTexture,
     roughness: 0.3,
     metalness: 0.05,
   })
@@ -61,6 +39,29 @@ export async function generateGeometry(params: LetterGeometryParams): Promise<Ge
   cap.receiveShadow = true
   group.add(cap)
 
+  // Letter text on cap surface (using a plane with text)
+  const canvas = document.createElement('canvas')
+  canvas.width = 256
+  canvas.height = 256
+  const ctx = canvas.getContext('2d')
+  if (ctx) {
+    ctx.fillStyle = '#f5f5f5'
+    ctx.fillRect(0, 0, 256, 256)
+    ctx.fillStyle = '#555555'
+    ctx.font = 'bold 180px Arial'
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    ctx.fillText(params.letter, 128, 128)
+  }
+  const texture = new THREE.CanvasTexture(canvas)
+  const textPlaneGeo = new THREE.PlaneGeometry(capWidthUnits * 0.8, capWidthUnits * 0.8)
+  const textMaterial = new THREE.MeshStandardMaterial({ map: texture, metalness: 0, roughness: 1 })
+  const textPlane = new THREE.Mesh(textPlaneGeo, textMaterial)
+  textPlane.position.z = clamped.topThickness * scale / 2 + 0.01
+  textPlane.castShadow = false
+  group.add(textPlane)
+
+  // Stem (black Cherry MX style)
   const stemGeometry = new THREE.CylinderGeometry(stemDiameterMm * scale / 2, stemDiameterMm * scale / 2, stemHeightMm * scale, 16)
   const stemMaterial = new THREE.MeshStandardMaterial({
     color: 0x1a1a1a,
@@ -73,6 +74,7 @@ export async function generateGeometry(params: LetterGeometryParams): Promise<Ge
   stem.receiveShadow = true
   group.add(stem)
 
+  // Base (dark gray)
   const baseGeometry = new THREE.CylinderGeometry(capWidthUnits / 2 + 1, capWidthUnits / 2 + 1, baseHeightMm * scale, 32)
   const baseMaterial = new THREE.MeshStandardMaterial({
     color: 0x2a2a2a,
@@ -85,6 +87,7 @@ export async function generateGeometry(params: LetterGeometryParams): Promise<Ge
   base.receiveShadow = true
   group.add(base)
 
+  // Combine all geometries
   const combinedGeometry = new THREE.BufferGeometry()
   group.updateMatrixWorld()
 
@@ -93,8 +96,8 @@ export async function generateGeometry(params: LetterGeometryParams): Promise<Ge
   let vertexOffset = 0
 
   group.traverse((child) => {
-    if (child instanceof THREE.Mesh && child.geometry) {
-      const geo = child.geometry as THREE.BufferGeometry
+    if (child instanceof THREE.Mesh && child.geometry instanceof THREE.BufferGeometry) {
+      const geo = child.geometry
       const pos = geo.getAttribute('position')
 
       if (pos) {

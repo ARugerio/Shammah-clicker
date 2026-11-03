@@ -11,43 +11,71 @@ export function Preview3D({ geometry }: Preview3DProps) {
   useEffect(() => {
     if (!containerRef.current) return
 
-    // Create scene
     const scene = new THREE.Scene()
-    const camera = new THREE.PerspectiveCamera(75, 400 / 400, 0.1, 1000)
+    scene.background = new THREE.Color(0x0a0a0a)
+
+    const container = containerRef.current
+    const width = container.clientWidth || 800
+    const height = container.clientHeight || 800
+
+    const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000)
+    camera.position.set(2, 2, 2)
+    camera.lookAt(0, 0, 0)
+
     const renderer = new THREE.WebGLRenderer({ antialias: true })
+    renderer.setSize(width, height)
+    renderer.shadowMap.enabled = true
+    renderer.shadowMap.type = THREE.PCFShadowMap
+    container.appendChild(renderer.domElement)
 
-    renderer.setSize(400, 400)
-    containerRef.current.appendChild(renderer.domElement)
+    // Grid
+    const gridHelper = new THREE.GridHelper(10, 10, 0x444444, 0x222222)
+    scene.add(gridHelper)
 
-    camera.position.z = 2
+    // Lights
+    const keyLight = new THREE.DirectionalLight(0xffffff, 0.8)
+    keyLight.position.set(2, 2, 2)
+    keyLight.castShadow = true
+    keyLight.shadow.mapSize.width = 2048
+    keyLight.shadow.mapSize.height = 2048
+    scene.add(keyLight)
 
-    // Add lights
-    const light = new THREE.DirectionalLight(0xffffff, 1)
-    light.position.set(1, 1, 1)
-    scene.add(light)
+    const rimLight = new THREE.DirectionalLight(0x6666ff, 0.3)
+    rimLight.position.set(-2, 1, -2)
+    scene.add(rimLight)
 
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5)
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.4)
     scene.add(ambientLight)
 
-    // Add mesh
-    const material = new THREE.MeshPhongMaterial({ color: 0x0066cc })
+    // Material realista para el clicker
+    const material = new THREE.MeshStandardMaterial({
+      color: 0xf5f5f5,
+      roughness: 0.4,
+      metalness: 0.1,
+    })
+
     const mesh = new THREE.Mesh(geometry, material)
+    mesh.castShadow = true
+    mesh.receiveShadow = true
     scene.add(mesh)
 
-    // Render loop
+    let animationId: number
     const animate = () => {
-      requestAnimationFrame(animate)
-      mesh.rotation.x += 0.01
-      mesh.rotation.y += 0.01
+      animationId = requestAnimationFrame(animate)
+      mesh.rotation.x += 0.003
+      mesh.rotation.y += 0.005
       renderer.render(scene, camera)
     }
     animate()
 
     return () => {
+      cancelAnimationFrame(animationId)
       renderer.dispose()
-      containerRef.current?.removeChild(renderer.domElement)
+      if (container.contains(renderer.domElement)) {
+        container.removeChild(renderer.domElement)
+      }
     }
   }, [geometry])
 
-  return <div ref={containerRef} className="preview-3d" style={{ width: 400, height: 400 }} />
+  return <div ref={containerRef} className="preview-3d" style={{ width: '100%', height: '100%' }} />
 }
