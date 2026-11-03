@@ -1,23 +1,53 @@
+import JSZip from 'jszip'
+import * as THREE from 'three'
+
 export async function export3MF(
-  _geometry: unknown,
+  geometry: THREE.BufferGeometry,
   _filename: string
 ): Promise<Blob> {
-  // Create minimal 3MF structure
+  const positions = geometry.getAttribute('position')
+  const indices = geometry.getIndex()
+
+  if (!positions) {
+    throw new Error('Geometry tiene no vertices')
+  }
+
+  const posArray = positions.array as Float32Array
+  const indArray = indices ? (indices.array as Uint32Array | Uint16Array) : null
+
+  let verticesXml = ''
+  for (let i = 0; i < posArray.length; i += 3) {
+    const x = (posArray[i] * 10).toFixed(4)
+    const y = (posArray[i + 1] * 10).toFixed(4)
+    const z = (posArray[i + 2] * 10).toFixed(4)
+    verticesXml += `<vertex x="${x}" y="${y}" z="${z}" />\n`
+  }
+
+  let trianglesXml = ''
+  if (indArray) {
+    for (let i = 0; i < indArray.length; i += 3) {
+      const v1 = indArray[i]
+      const v2 = indArray[i + 1]
+      const v3 = indArray[i + 2]
+      trianglesXml += `<triangle v1="${v1}" v2="${v2}" v3="${v3}" />\n`
+    }
+  } else {
+    for (let i = 0; i < positions.count; i += 3) {
+      trianglesXml += `<triangle v1="${i}" v2="${i + 1}" v3="${i + 2}" />\n`
+    }
+  }
+
   const modelXml = `<?xml version="1.0" encoding="UTF-8"?>
-<model xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02" unit="millimeter">
+<model xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02" unit="millimeter" xml:lang="es">
+  <metadata name="Author">SHAMMAH Clicker Studio</metadata>
+  <metadata name="Description">Cherry MX Clicker generado profesionalmente</metadata>
   <resources>
-    <object id="1" type="model">
+    <object id="1" type="model" name="Clicker">
       <mesh>
         <vertices>
-          <vertex x="0" y="0" z="0" />
-          <vertex x="10" y="0" z="0" />
-          <vertex x="10" y="10" z="0" />
-          <vertex x="0" y="10" z="0" />
-        </vertices>
+${verticesXml}        </vertices>
         <triangles>
-          <triangle v1="0" v2="1" v3="2" />
-          <triangle v1="0" v2="2" v3="3" />
-        </triangles>
+${trianglesXml}        </triangles>
       </mesh>
     </object>
   </resources>
@@ -38,14 +68,11 @@ export async function export3MF(
   <Relationship Id="rel0" Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel" Target="3D/model.model" />
 </Relationships>`
 
-  // Create ZIP structure
-  const files = {
-    '[Content_Types].xml': new TextEncoder().encode(contentTypes),
-    '_rels/.rels': new TextEncoder().encode(rels),
-    '3D/model.model': new TextEncoder().encode(modelXml),
-  }
+  const zip = new JSZip()
+  zip.file('[Content_Types].xml', contentTypes)
+  zip.folder('_rels')?.file('.rels', rels)
+  zip.folder('3D')?.file('model.model', modelXml)
 
-  // Compress to ZIP (simple version - in production use proper ZIP library)
-  const blob = new Blob(Object.values(files), { type: 'application/zip' })
+  const blob = await zip.generateAsync({ type: 'blob' })
   return blob
 }
