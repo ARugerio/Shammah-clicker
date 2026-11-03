@@ -1,4 +1,3 @@
-import React from 'react'
 import type { LetterGeometryParams } from '../letter-engine/types'
 
 interface ParameterControlsProps {

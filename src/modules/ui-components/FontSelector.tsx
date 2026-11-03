@@ -1,6 +1,4 @@
-import React from 'react'
 import { getFontList } from '../font-manager/loadFont'
-import type { GoogleFont } from '../font-manager/types'
 
 interface FontSelectorProps {
   value: string

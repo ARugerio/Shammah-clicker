@@ -1,9 +1,6 @@
-import * as THREE from 'three'
-import { compress } from 'fflate'
-
 export async function export3MF(
-  geometry: THREE.BufferGeometry,
-  filename: string
+  _geometry: unknown,
+  _filename: string
 ): Promise<Blob> {
   // Create minimal 3MF structure
   const modelXml = `<?xml version="1.0" encoding="UTF-8"?>

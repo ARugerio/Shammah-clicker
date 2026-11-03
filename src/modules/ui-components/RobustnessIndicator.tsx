@@ -1,4 +1,3 @@
-import React from 'react'
 import type { RobustnessScore } from '../letter-engine/types'
 
 interface RobustnessIndicatorProps {

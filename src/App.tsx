@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { FontSelector } from './modules/ui-components/FontSelector'
 import { ParameterControls } from './modules/ui-components/ParameterControls'
 import { Preview3D } from './modules/ui-components/Preview3D'
