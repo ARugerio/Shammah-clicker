@@ -1,0 +1,32 @@
+{
+  "name": "shammah-clicker-studio",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Generador 3D de clickers Cherry MX - SHAMMAH Studio",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "three": "^0.171.0",
+    "manifold-3d": "^3.0.1",
+    "fflate": "^0.8.3",
+    "lucide-react": "^0.408.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@types/three": "^0.171.0",
+    "@types/node": "^20.10.0",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.5",
+    "vitest": "^1.1.0",
+    "@testing-library/react": "^14.1.2",
+    "@vitejs/plugin-react": "^4.2.1"
+  }
+}
