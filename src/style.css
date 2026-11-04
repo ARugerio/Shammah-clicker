@@ -7,7 +7,7 @@
   --line: #d1d5db;
   --text: #1f2937;
   --muted: #6b7280;
-  --accent: #2563eb;
+  --accent: #e91e63;
   --accent-text: #ffffff;
   --accent-2: #10b981;
 }
@@ -21,8 +21,8 @@
   --line: #2f3440;
   --text: #e6e9ef;
   --muted: #9aa3b2;
-  --accent: #5b9dff;
-  --accent-text: #08122a;
+  --accent: #e91e63;
+  --accent-text: #ffffff;
   --accent-2: #36c08a;
 }
 
@@ -62,18 +62,18 @@ body { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
 .topbar-btn svg { flex: 0 0 auto; }
 .topbar-btn:hover { border-color: var(--accent); color: var(--accent); }
 
-/* Commercial license + Ko-fi: red, emphasized (same size as the others) */
+/* SHAMMAH: rosa/magenta emphasized buttons */
 .topbar-license,
 .donate-kofi {
-  background: #ef4444;
-  border-color: #ef4444;
+  background: #e91e63;
+  border-color: #e91e63;
   color: #ffffff;
   font-weight: 700;
 }
 .topbar-license:hover,
 .donate-kofi:hover {
-  background: #dc2626;
-  border-color: #dc2626;
+  background: #c2185b;
+  border-color: #c2185b;
   color: #ffffff;
 }
 
