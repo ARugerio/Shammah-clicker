@@ -50,7 +50,7 @@ function defaultSwitchLayout(n: number, capWidthMm: number): SwitchPlacement[] {
 
 // ---- State (UI-facing) ----
 const store = createStore<UiState>({
-  status: 'Loading switch assets…',
+  status: 'Cargando assets…',
   building: false,
   hasParts: false,
   colorCount: 4,
@@ -279,9 +279,9 @@ const ui = createUi(sidebarLeft, sidebarRight, statusEl, {
   onAiPrompt: async () => {
     try {
       await navigator.clipboard.writeText(AI_PROMPT);
-      store.set({ status: 'AI image prompt copied to clipboard ✓' });
+      store.set({ status: 'Prompt copiado al portapapeles ✓' });
     } catch {
-      store.set({ status: 'Could not copy, see console.' });
+      store.set({ status: 'No se pudo copiar. Ver consola.' });
       console.log(AI_PROMPT);
     }
   },
@@ -305,41 +305,41 @@ const ui = createUi(sidebarLeft, sidebarRight, statusEl, {
   },
   onSvgUpload: async (file) => {
     try {
-      store.set({ building: true, status: 'Reading SVG…' });
+      store.set({ building: true, status: 'Leyendo SVG…' });
       const svgText = await file.text();
       ui.addUploadedSvg(svgText, file.name.replace(/\.svg$/i, ''));
       store.set({ building: false });
     } catch (err) {
-      store.set({ building: false, status: 'Error reading SVG: ' + String(err) });
+      store.set({ building: false, status: 'Error leyendo SVG: ' + String(err) });
     }
   },
   onSelectSvg: (svgText, name) => {
     currentSvgText = svgText;
     currentSvgName = name;
-    store.set({ status: `Selected SVG: ${name}. Click Generate to update.` });
+    store.set({ status: `SVG seleccionado: ${name}. Haz clic en Generar para actualizar.` });
   },
   onSelectIcon: (svgText, name) => {
     currentIconText = svgText;
     currentIconName = name;
-    store.set({ currentIconName: name, status: `Selected icon: ${name}. Click Generate to update.` });
+    store.set({ currentIconName: name, status: `Icono seleccionado: ${name}. Haz clic en Generar para actualizar.` });
   },
   onTextChange: (text) => {
     currentText = text;
-    store.set({ status: 'Text updated. Click Generate to update.' });
+    store.set({ status: 'Texto actualizado. Haz clic en Generar para actualizar.' });
   },
   onFontSelect: (fontId) => {
     currentFontId = fontId;
-    store.set({ status: 'Font changed. Click Generate to update.' });
+    store.set({ status: 'Fuente cambiada. Haz clic en Generar para actualizar.' });
   },
   onImportFont: async (file) => {
     try {
-      store.set({ building: true, status: 'Importing font…' });
+      store.set({ building: true, status: 'Importando fuente…' });
       const font = await importFontFile(file);
       ui.addFontOption(font);
       currentFontId = font.id;
-      store.set({ building: false, status: `Font ${font.name} imported! Click Generate to update.` });
+      store.set({ building: false, status: `¡Fuente ${font.name} importada! Haz clic en Generar para actualizar.` });
     } catch (err) {
-      store.set({ building: false, status: 'Could not import font: ' + String(err) });
+      store.set({ building: false, status: 'No se pudo importar fuente: ' + String(err) });
     }
   },
   onThemeChange: (theme) => {
@@ -700,7 +700,7 @@ worker.onmessage = (e: MessageEvent<GeometryResponse>) => {
       viewer.setSwitch(msg.switchMesh);
       viewer.showSwitch(store.get().showSwitch);
       store.set({
-        status: 'Ready. Import an image, SVG, icon, or text.',
+        status: 'Listo. Importa una imagen, SVG, icono o texto.',
       });
       // Pick a default popular icon on startup so it builds immediately
       if (store.get().importMode === 'icon' && !currentIconText) {
