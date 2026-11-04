@@ -19,7 +19,7 @@ function imageSample(file: string, name: string): SampleInfo {
 }
 
 export const SAMPLES: SampleInfo[] = [
-  imageSample('Vostok Labs logo.png', 'Sample 1'),
+  
   imageSample('heart.png', 'Heart'),
   imageSample('paw.png', 'Paw'),
   imageSample('dog.png', 'Dog'),
