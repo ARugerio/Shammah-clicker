@@ -1,12 +1,14 @@
-import { defineConfig } from 'vite'
+import { defineConfig } from 'vite';
 
 export default defineConfig({
   base: '/Shammah-clicker-studio/',
-  server: {
-    port: parseInt(process.env.PORT || '5173'),
+  worker: {
+    format: 'es',
   },
   build: {
-    outDir: 'dist',
-    sourcemap: true,
+    target: 'es2022',
   },
-})
+  optimizeDeps: {
+    exclude: ['manifold-3d'],
+  },
+});
