@@ -46,7 +46,7 @@ export async function loadFileToImage(file: File, maxSize = TARGET): Promise<Rgb
 // Decode an image URL (e.g. a bundled sample asset) into resampled ImageData.
 export async function loadUrlToImage(url: string, maxSize = TARGET): Promise<RgbaImage> {
   const res = await fetch(url);
-  if (!res.ok) throw new Error(`Failed to load image: ${url} (${res.status})`);
+  if (!res.ok) throw new Error(`No se pudo cargar la imagen: ${url} (${res.status})`);
   const blob = await res.blob();
   const bitmap = await decodeBitmap(blob);
   try {

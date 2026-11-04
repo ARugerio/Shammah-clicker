@@ -370,7 +370,7 @@ export function buildClicker(
   }
   const warnings: string[] = [];
   if (pinched && requested.length > 1) {
-    warnings.push('Switches were pulled together to fit the cap — increase Size for more room.');
+    warnings.push('Los switches se juntaron para caber en la tapa: aumenta el Tamaño para dar más espacio.');
   }
 
   // Stem fit: scale the keycap-mount stem in XY so its cross socket opens up (positive

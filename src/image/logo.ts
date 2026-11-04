@@ -174,7 +174,7 @@ export function parseSvg(svgText: string, opts: { removeBg?: boolean } = {}): Re
   groups.forEach(g => allRings.push(...g.rings));
 
   if (allRings.length === 0) {
-    throw new Error('No drawable paths found in this SVG.');
+    throw new Error('No se encontraron trazos dibujables en este SVG.');
   }
 
   // Bbox over the (possibly background-stripped) rings, so the remaining art is

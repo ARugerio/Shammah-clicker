@@ -132,7 +132,7 @@ export async function importFontFile(file: File): Promise<FontOption> {
  *   region (part `top-color-{k}-0`), so letters can be picked and colored individually.
  */
 export function parseLetter(text: string, fontId: string, maxLen = 30, separate = false): RegionSet {
-  if (!text.trim()) throw new Error('Type a letter first.');
+  if (!text.trim()) throw new Error('Escribe primero una letra.');
 
   const option = FONT_OPTIONS.find((font) => font.id === fontId) || FONT_OPTIONS[0];
   // Each glyph is a group of rings (its outline + any holes), kept grouped so we can
@@ -200,7 +200,7 @@ export function parseLetter(text: string, fontId: string, maxLen = 30, separate 
     currentY -= 130; // Move down for the next line
   }
 
-  if (!glyphs.length) throw new Error('No drawable outlines found in this font.');
+  if (!glyphs.length) throw new Error('Esta fuente no tiene contornos dibujables.');
 
   const cx = (box.min.x + box.max.x) / 2;
   const cy = (box.min.y + box.max.y) / 2;

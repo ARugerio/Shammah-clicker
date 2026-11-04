@@ -751,7 +751,7 @@ worker.onmessage = (e: MessageEvent<GeometryResponse>) => {
   }
 };
 worker.onerror = (e) => {
-  store.set({ building: false, status: 'Worker failed: ' + e.message });
+  store.set({ building: false, status: 'Fallo del motor 3D: ' + e.message });
   console.error(e);
 };
 
@@ -760,14 +760,14 @@ async function initAssets() {
     const [socket, stem, sw] = await assetsPromise;
     worker.postMessage({ type: 'init', socket, stem, switch: sw }, [socket, stem, sw]);
   } catch (err) {
-    store.set({ status: 'Failed to load switch assets: ' + String(err) });
+    store.set({ status: 'No se pudieron cargar los assets del switch: ' + String(err) });
     isInitialLoad = false;
   }
 }
 
 async function loadDefaultClicker() {
   try {
-    store.set({ status: 'Loading default clicker…' });
+    store.set({ status: 'Cargando clicker de ejemplo…' });
     const response = await fetch(base + 'assets/default-clicker.json');
     if (!response.ok) throw new Error('Failed to fetch default clicker asset');
     const serializedParts = await response.json();
@@ -801,9 +801,9 @@ async function loadDefaultClicker() {
 // ---- Pipeline ----
 async function openWizard(getter: () => Promise<RgbaImage>) {
   try {
-    store.set({ building: true, status: 'Reading image…' });
+    store.set({ building: true, status: 'Leyendo imagen…' });
     const baseImage = await getter();
-    store.set({ building: false, status: 'Preprocess your image…' });
+    store.set({ building: false, status: 'Preparando tu imagen…' });
     runWizard({
       baseImage,
       initialColorCount: store.get().colorCount,
@@ -831,7 +831,7 @@ async function openWizard(getter: () => Promise<RgbaImage>) {
       },
     });
   } catch (err) {
-    store.set({ building: false, status: 'Could not read image: ' + String(err) });
+    store.set({ building: false, status: 'No se pudo leer la imagen: ' + String(err) });
   }
 }
 
@@ -844,7 +844,7 @@ function reprocess() {
 
   if (s.importMode === 'image') {
     if (!originalImage) return;
-    store.set({ building: true, status: 'Removing background & tracing…' });
+    store.set({ building: true, status: 'Quitando fondo y trazando…' });
     regionSet = processImage(cloneImage(originalImage), s.colorCount, {
       removeBg: s.removeBg,
       smoothing: s.smoothing,
@@ -852,7 +852,7 @@ function reprocess() {
     });
   } else if (s.importMode === 'svg') {
     if (!currentSvgText) {
-      store.set({ status: 'Upload an SVG file first.' });
+      store.set({ status: 'Primero sube un archivo SVG.' });
       return;
     }
     try {
@@ -872,7 +872,7 @@ function reprocess() {
       }
     }
     if (!currentIconText) {
-      store.set({ status: 'Select an icon first.' });
+      store.set({ status: 'Primero selecciona un icono.' });
       return;
     }
     try {
@@ -902,7 +902,7 @@ function reprocess() {
   store.set({ palette });
 
   if (palette.length === 0) {
-    store.set({ building: false, status: 'No outline found.' });
+    store.set({ building: false, status: 'No se encontró ningún contorno.' });
     return;
   }
   rebuild();
@@ -911,7 +911,7 @@ function reprocess() {
 function rebuild(quiet = false) {
   if (!regionSet || regionSet.regions.length === 0) return;
   if (!assetsReady) {
-    store.set({ status: 'Waiting for switch assets…' });
+    store.set({ status: 'Esperando assets del switch…' });
     return;
   }
   const s = store.get();
@@ -966,9 +966,9 @@ function rebuild(quiet = false) {
   if (quiet) {
     // Live edit preview (extrude / edges): rebuild silently — no full-screen overlay.
   } else if (isInitialLoad) {
-    store.set({ status: 'Building clicker…' });
+    store.set({ status: 'Generando clicker…' });
   } else {
-    store.set({ building: true, status: 'Building clicker…' });
+    store.set({ building: true, status: 'Generando clicker…' });
   }
   worker.postMessage({ type: 'buildClicker', regions, outline: regionSet.outline, params });
 }
@@ -1081,12 +1081,12 @@ function saveProject() {
     image: originalImage ? imageToDataUrl(originalImage) : null,
   };
   downloadBlob(new Blob([JSON.stringify(proj)], { type: 'application/json' }), 'clicker-project.json');
-  store.set({ status: 'Project saved ✓' });
+  store.set({ status: 'Proyecto guardado ✓' });
 }
 
 async function loadProject(file: File) {
   try {
-    store.set({ building: true, status: 'Loading project…' });
+    store.set({ building: true, status: 'Cargando proyecto…' });
     const proj = JSON.parse(await file.text());
     const set = proj.settings ?? {};
 
@@ -1149,7 +1149,7 @@ async function loadProject(file: File) {
       rebuild();
     }
   } catch (err) {
-    store.set({ building: false, status: 'Could not load project: ' + String(err) });
+    store.set({ building: false, status: 'No se pudo cargar el proyecto: ' + String(err) });
   }
 }
 

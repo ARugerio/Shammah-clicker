@@ -117,7 +117,7 @@ self.onmessage = async (e: MessageEvent<GeometryRequest>) => {
     }
 
     if (msg.type === 'buildClicker') {
-      if (!socket || !stem) throw new Error('Assets not initialized');
+      if (!socket || !stem) throw new Error('Assets no inicializados');
       const { parts, switchPlacements, warnings } = buildClicker(
         wasm,
         socket,

@@ -20,11 +20,11 @@ function imageSample(file: string, name: string): SampleInfo {
 
 export const SAMPLES: SampleInfo[] = [
   
-  imageSample('heart.png', 'Heart'),
-  imageSample('paw.png', 'Paw'),
-  imageSample('dog.png', 'Dog'),
-  imageSample('cheese.png', 'Cheese'),
-  imageSample('radiation.png', 'Radiation'),
+  imageSample('heart.png', 'Corazón'),
+  imageSample('paw.png', 'Huella'),
+  imageSample('dog.png', 'Perro'),
+  imageSample('cheese.png', 'Queso'),
+  imageSample('radiation.png', 'Radiación'),
 ];
 
 // Bundled vector samples, surfaced as ready-to-use presets in the SVG panel.

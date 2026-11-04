@@ -4,19 +4,19 @@
 export type RGB = [number, number, number];
 
 export const FILAMENTS: [string, string][] = [
-  ['Black', '#161616'],
-  ['White', '#f7f7f5'],
-  ['Gray', '#8c8c90'],
-  ['Silver', '#cfd0d2'],
-  ['Red', '#c8102e'],
-  ['Orange', '#ff6a13'],
-  ['Yellow', '#f5c518'],
-  ['Green', '#00ae42'],
-  ['Cyan', '#0086d6'],
-  ['Blue', '#0a5cd5'],
-  ['Purple', '#8e44ad'],
-  ['Pink', '#e6398b'],
-  ['Brown', '#7a5230'],
+  ['Negro', '#161616'],
+  ['Blanco', '#f7f7f5'],
+  ['Gris', '#8c8c90'],
+  ['Plata', '#cfd0d2'],
+  ['Rojo', '#c8102e'],
+  ['Naranja', '#ff6a13'],
+  ['Amarillo', '#f5c518'],
+  ['Verde', '#00ae42'],
+  ['Cian', '#0086d6'],
+  ['Azul', '#0a5cd5'],
+  ['Morado', '#8e44ad'],
+  ['Rosa', '#e6398b'],
+  ['Café', '#7a5230'],
   ['Beige', '#d9c8a9'],
 ];
 
