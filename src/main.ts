@@ -1005,7 +1005,6 @@ function firstLine(s: string): string {
 }
 
 // SHAMMAH Studio - License system removed (proprietary, no third-party attribution)
-}
 
 // ---- Render / project save-load / AI prompt ----
 function downloadBlob(blob: Blob, fileName: string) {
