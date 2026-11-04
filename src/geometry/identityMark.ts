@@ -96,7 +96,7 @@ export function markVoids(seed: string): MarkVoid[] {
 // so the two tiers never overlap. Even if someone copies the source and runs it
 // without VITE_MARK_SEED, every model still carries these identity voids.
 // ---------------------------------------------------------------------------
-const HARDCODED_SEED = 'vostok-labs-clicker-generator-2026';
+const HARDCODED_SEED = 'shammah-clicker-studio-2026';
 
 /** 4 hardcoded voids that are ALWAYS subtracted from the body — no build-time
  *  secret needed. Proves the model was built by this generator's code. */
