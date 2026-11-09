@@ -424,7 +424,7 @@ const ui = createUi(sidebarLeft, sidebarRight, statusEl, {
   onUndo: () => undo(),
   onRedo: () => redo(),
   onRefresh: () => refreshDesign(),
-}, shell);
+}, shell, { onExplosion: (t) => viewer.setExplosion(t) });
 
 // ---- Undo / redo ----------------------------------------------------------
 // History snapshots the editable "document" fields (colors, heights, edges,

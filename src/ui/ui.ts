@@ -9,8 +9,8 @@ import { coloresPanel, mountColorViewportTools } from './panels/colores';
 import { disenoPanel } from './panels/diseno';
 import { llaveroPanel } from './panels/llavero';
 import { exportarPanel } from './panels/exportar';
+import { mountViewerControls } from './viewer-controls/viewerControls';
 import { mountTopbarActions } from './shell/topbarActions';
-import { tip } from './shared/controls';
 import { hexRgb, showColorPopoverAt } from './shared/colorPopover';
 
 export interface UiState {
@@ -109,7 +109,8 @@ export function createUi(
   sidebarRight: HTMLElement,
   statusEl: HTMLElement,
   cb: UiCallbacks,
-  shell?: Shell
+  shell?: Shell,
+  opts?: { onExplosion?: (t: number) => void },
 ) {
   // Barra Lateral Izquierda
   sidebarLeft.innerHTML = `
@@ -121,18 +122,6 @@ export function createUi(
           SHAMMAH CREA 3D
         </a>
       </p>
-    </div>
-
-    <div class="section" id="previewViewSection">
-      <span class="label">Previsualización</span>
-      <div class="tabs" id="viewTabs" role="tablist" style="margin-bottom: 12px;">
-        <button class="tab active" data-view="assembled" type="button">Ensamblado</button>
-        <button class="tab" data-view="exploded" type="button">Despiezado</button>
-      </div>
-      <div class="switch-row">
-        <span class="switch-label">Mostrar switch MX ${tip('Muestra un interruptor MX de referencia. No se exportará al modelo 3MF.')}</span>
-        <label class="toggle"><input id="showswitch" type="checkbox" /><span class="slider"></span></label>
-      </div>
     </div>
 
     <div id="geometrySettingsContainer"></div>
@@ -242,12 +231,9 @@ export function createUi(
     viewportTools = mountColorViewportTools(viewport, cb);
   }
 
-  const viewTabs = $('viewTabs');
-  viewTabs.addEventListener('click', (e) => {
-    const t = (e.target as HTMLElement).closest('[data-view]') as HTMLElement | null;
-    if (t) cb.onView(t.dataset.view as ViewMode);
-  });
-  $<HTMLInputElement>('showswitch').addEventListener('change', (e) => cb.onShowSwitch((e.target as HTMLInputElement).checked));
+  // Controles del visor (explosión y ojo del switch): solo con `shell`, que es siempre el caso en main.ts.
+  const viewerControls =
+    shell && opts?.onExplosion ? mountViewerControls(shell.viewerControlsEl, cb, opts.onExplosion) : null;
 
   const tipBubble = document.createElement('div');
   tipBubble.className = 'help-tip-bubble';
@@ -596,10 +582,7 @@ export function createUi(
     exportar.update(state);
     topbar.update(state);
     viewportTools?.update(state);
-
-    $<HTMLInputElement>('showswitch').checked = state.showSwitch;
-
-    for (const b of viewTabs.querySelectorAll<HTMLElement>('button')) b.classList.toggle('active', b.dataset.view === state.view);
+    viewerControls?.update(state);
 
     const overlay = $('loadingOverlay');
     if (overlay) {

@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { toCreasedNormals } from 'three/addons/utils/BufferGeometryUtils.js';
+import { explosionOffset } from './explosion';
 import type { ClickerPart, MeshData, RGB, SwitchPlacement, ViewMode } from '../types';
 
 export type SectionAxis = 'x' | 'y' | 'z';
@@ -9,6 +10,8 @@ export type SectionAxis = 'x' | 'y' | 'z';
 export interface Viewer {
   setParts(parts: ClickerPart[], preserveCamera?: boolean): void;
   setView(mode: ViewMode): void;
+  /** Continuous cap separation: t in [0, 1] (clamped); 0 = assembled, 1 = the full 'exploded' gap. */
+  setExplosion(t: number): void;
   setSection(axis: SectionAxis, pos: number): void;
   setSwitch(mesh: MeshData | null): void;
   showSwitch(on: boolean): void;
@@ -142,6 +145,7 @@ export function createViewer(container: HTMLElement): Viewer {
 
   let viewMode: ViewMode = 'assembled';
   let explodeOffset = 0;
+  let explosionT = 0;
   let switchMaterial: THREE.MeshStandardMaterial | null = null;
   // The switch mesh (shared across placements) and where to seat copies of it.
   let switchGeometry: THREE.BufferGeometry | null = null;
@@ -256,7 +260,7 @@ export function createViewer(container: HTMLElement): Viewer {
   }
 
   function applyView() {
-    capGroup.position.z = viewMode === 'exploded' ? explodeOffset : 0;
+    capGroup.position.z = viewMode === 'section' ? 0 : explosionOffset(explosionT, explodeOffset);
     const section = viewMode === 'section';
     if (section) updateClipPlane();
     for (const m of materials) (m as THREE.MeshStandardMaterial).clippingPlanes = section ? [clipPlane] : [];
@@ -265,6 +269,12 @@ export function createViewer(container: HTMLElement): Viewer {
 
   function setView(mode: ViewMode) {
     viewMode = mode;
+    if (mode !== 'section') explosionT = mode === 'exploded' ? 1 : 0;
+    applyView();
+  }
+
+  function setExplosion(t: number) {
+    explosionT = Math.min(1, Math.max(0, Number.isFinite(t) ? t : 0));
     applyView();
   }
 
@@ -516,6 +526,7 @@ export function createViewer(container: HTMLElement): Viewer {
   return {
     setParts,
     setView,
+    setExplosion,
     setSection,
     setSwitch,
     showSwitch,
