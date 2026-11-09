@@ -34,13 +34,19 @@ describe('createShell', () => {
   it('expone contenedores y conserva los IDs y enlaces existentes', () => {
     expect(shell.viewportEl.querySelector('#app')).not.toBeNull();
     expect(shell.statusEl.id).toBe('status');
-    expect(shell.legacyLeftEl.id).toBe('sidebar-left');
-    expect(shell.legacyRightEl.id).toBe('sidebar-right');
     expect(shell.viewportEl.contains(shell.viewerControlsEl)).toBe(true);
     expect(root.querySelector('#topbar')!.contains(shell.topbarActionsEl)).toBe(true);
     const hrefs = Array.from(root.querySelectorAll('#topbar a')).map((a) => a.getAttribute('href'));
     expect(hrefs.some((h) => h?.includes('arugerio.github.io/Shammah3d'))).toBe(true);
     expect(hrefs.some((h) => h?.includes('api.whatsapp.com'))).toBe(true);
+  });
+
+  it('no quedan drawers provisionales ni sus botones', () => {
+    expect(root.querySelector('aside')).toBeNull();
+    expect(root.querySelector('[data-drawer], #sidebar-left, #sidebar-right, .legacy-drawer, .sidebar')).toBeNull();
+    const labels = Array.from(root.querySelectorAll('#topbar button')).map((b) => b.textContent?.trim());
+    expect(labels).not.toContain('Opciones');
+    expect(labels).not.toContain('Ajustes');
   });
 
   it('openPanel muestra solo ese panel y marca su botón', () => {

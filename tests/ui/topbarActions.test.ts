@@ -97,26 +97,15 @@ describe('mountTopbarActions', () => {
 });
 
 describe('createUi con la barra superior', () => {
-  it('con shell: un solo #undoBtn y #themeToggle, en topbarActionsEl; nada en drawers', () => {
+  it('con shell: un solo #undoBtn y #themeToggle, en topbarActionsEl', () => {
     document.body.innerHTML = '';
     const root = document.body.appendChild(document.createElement('div'));
     const shell = createShell(root);
     const { cb } = makeCallbacks();
-    createUi(shell.legacyLeftEl, shell.legacyRightEl, shell.statusEl, cb, shell).update(makeUiState());
+    createUi(shell.statusEl, cb, shell).update(makeUiState());
     for (const id of ['undoBtn', 'themeToggle', 'helpToggle', 'saveProj', 'projFile']) {
       expect(document.querySelectorAll('#' + id).length).toBe(1);
       expect(shell.topbarActionsEl.querySelector('#' + id)).not.toBeNull();
     }
-  });
-
-  it('sin shell: un solo #undoBtn y #themeToggle', () => {
-    document.body.innerHTML = '';
-    const l = document.body.appendChild(document.createElement('aside'));
-    const r = document.body.appendChild(document.createElement('aside'));
-    const s = document.body.appendChild(document.createElement('div'));
-    const { cb } = makeCallbacks();
-    createUi(l, r, s, cb).update(makeUiState());
-    expect(document.querySelectorAll('#undoBtn').length).toBe(1);
-    expect(document.querySelectorAll('#themeToggle').length).toBe(1);
   });
 });

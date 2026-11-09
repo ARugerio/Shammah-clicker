@@ -149,21 +149,20 @@ describe('disenoPanel', () => {
 });
 
 describe('createUi y el panel Diseño', () => {
-  const mountUi = (withShell: boolean) => {
+  const mountUi = () => {
     document.body.innerHTML = '';
     const root = document.body.appendChild(document.createElement('div'));
     const shell = createShell(root);
     const { cb, calls } = makeCallbacks();
-    const ui = createUi(shell.legacyLeftEl, shell.legacyRightEl, shell.statusEl, cb, withShell ? shell : undefined);
+    const ui = createUi(shell.statusEl, cb, shell);
     ui.update(makeUiState({ importMode: 'svg' }));
     return { shell, calls, ui };
   };
 
-  it('con shell monta el panel en el dock y no deja copia en la barra antigua', () => {
-    const { shell, calls } = mountUi(true);
+  it('monta el panel en el dock, una sola vez', () => {
+    const { shell, calls } = mountUi();
     const dock = shell.panelHost('diseno');
     expect(dock.querySelector('#importTabs')).not.toBeNull();
-    expect(shell.legacyRightEl.querySelector('#importTabs')).toBeNull();
     for (const id of ['importTabs', 'letterText', 'removebg', 'fontGrid', 'gallery', 'uploadGallery']) {
       expect(document.querySelectorAll('#' + id).length).toBe(1);
     }
@@ -171,24 +170,12 @@ describe('createUi y el panel Diseño', () => {
     dock.querySelector<HTMLElement>('#importTabs [data-mode="text"]')!.click();
     expect(calls.onImportMode).toEqual([['text']]);
     // El botón de exportación ya vive en su propio panel del dock (Task 8).
-    expect(shell.legacyRightEl.querySelector('#export')).toBeNull();
     expect(shell.panelHost('exportar').querySelector('#export')).not.toBeNull();
     shell.dispose();
   });
 
-  it('sin shell monta el panel en la barra derecha, antes del panel Exportar', () => {
-    const { shell } = mountUi(false);
-    const tabs = shell.legacyRightEl.querySelector('#importTabs');
-    expect(tabs).not.toBeNull();
-    expect(shell.panelHost('diseno').querySelector('#importTabs')).toBeNull();
-    expect(document.querySelectorAll('#importTabs').length).toBe(1);
-    const footer = shell.legacyRightEl.querySelector('#export')!;
-    expect(tabs!.compareDocumentPosition(footer) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    shell.dispose();
-  });
-
   it('createUi sigue devolviendo addUploadedSvg y addFontOption, que delegan en el panel', () => {
-    const { shell, calls, ui } = mountUi(true);
+    const { shell, calls, ui } = mountUi();
     ui.addUploadedSvg('<svg/>', 'Subido');
     expect(shell.panelHost('diseno').querySelectorAll('#uploadGallery .icon').length).toBe(1);
     expect(calls.onSelectSvg).toEqual([['<svg/>', 'Subido']]);

@@ -18,8 +18,6 @@ export interface Shell {
   viewerControlsEl: HTMLElement;
   /** Barra de herramientas inferior (donde se anclan las pistas). */
   dockEl: HTMLElement;
-  legacyLeftEl: HTMLElement;
-  legacyRightEl: HTMLElement;
   panelHost(id: PanelId): HTMLElement;
   openPanel(id: PanelId | null): void;
   openPanelId(): PanelId | null;

@@ -88,7 +88,7 @@ describe('createUi con shell', () => {
     const root = document.body.appendChild(document.createElement('div'));
     const shell = createShell(root);
     const { cb } = makeCallbacks();
-    const ui = createUi(shell.legacyLeftEl, shell.legacyRightEl, shell.statusEl, cb, shell);
+    const ui = createUi(shell.statusEl, cb, shell);
     ui.update(makeUiState());
     expect(document.querySelector('.welcome-overlay')).toBeNull();
     expect(document.querySelector('.tutorial-backdrop, .tutorial-card-container')).toBeNull();
@@ -98,12 +98,5 @@ describe('createUi con shell', () => {
     document.getElementById('helpToggle')!.click();
     expect(visible()).toBe(true);
     shell.dispose();
-  });
-
-  it('sin shell, Ayuda no falla', () => {
-    document.body.innerHTML = '<div id="status"></div><div id="l"></div><div id="r"></div>';
-    const { cb } = makeCallbacks();
-    createUi(document.getElementById('l')!, document.getElementById('r')!, document.getElementById('status')!, cb);
-    expect(() => document.getElementById('helpToggle')!.click()).not.toThrow();
   });
 });

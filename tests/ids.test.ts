@@ -18,18 +18,15 @@ const ON_DEMAND_IDS: Record<string, string> = {
   sbColorPopover: 'popover de color, se crea al pulsar una muestra',
   // Asistente de recorte (src/ui/wizard.ts): su overlay solo existe mientras corre runWizard().
   wzCancel: 'botón del asistente de imagen, se crea al abrir el asistente',
-  // OJO: referencia muerta heredada. ui.ts hace getElementById('extrudeTooltip') pero
-  // ningún HTML ni código crea ese elemento (el if lo vuelve inofensivo). No es bajo demanda.
-  extrudeTooltip: 'referencia muerta preexistente: nada crea este elemento',
 };
 
 beforeAll(() => {
-  // index.html solo trae #shell-root; el esqueleto (con #app, #status y las barras) lo arma createShell.
+  // index.html solo trae #shell-root; el esqueleto (con #app, #status y el dock) lo arma createShell.
   const shellRoot = document.body.appendChild(document.createElement('div'));
   shellRoot.id = 'shell-root';
   const shell = createShell(shellRoot);
   const { cb } = makeCallbacks();
-  const ui = createUi(shell.legacyLeftEl, shell.legacyRightEl, shell.statusEl, cb, shell);
+  const ui = createUi(shell.statusEl, cb, shell);
   ui.update(makeUiState());
 });
 

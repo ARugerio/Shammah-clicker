@@ -97,7 +97,7 @@ describe('createUi con shell y opts.onExplosion', () => {
     const shell = createShell(root);
     const made = makeCallbacks();
     const got: number[] = [];
-    const ui = createUi(shell.legacyLeftEl, shell.legacyRightEl, shell.statusEl, made.cb, shell, { onExplosion: (t) => got.push(t) });
+    const ui = createUi(shell.statusEl, made.cb, shell, { onExplosion: (t) => got.push(t) });
     ui.update(makeUiState({ view: 'assembled' }));
     expect(document.querySelectorAll('input[type="range"][aria-label="Explosión"]')).toHaveLength(1);
     expect(document.querySelectorAll('button[aria-label="Mostrar switch"]')).toHaveLength(1);

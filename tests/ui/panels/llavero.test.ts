@@ -66,33 +66,23 @@ describe('llaveroPanel', () => {
 });
 
 describe('createUi y el panel Llavero', () => {
-  const mountUi = (withShell: boolean) => {
+  const mountUi = () => {
     document.body.innerHTML = '';
     const root = document.body.appendChild(document.createElement('div'));
     const shell = createShell(root);
     const { cb, calls } = makeCallbacks();
-    const ui = createUi(shell.legacyLeftEl, shell.legacyRightEl, shell.statusEl, cb, withShell ? shell : undefined);
+    const ui = createUi(shell.statusEl, cb, shell);
     ui.update(makeUiState({ keychain: on }));
     return { shell, calls };
   };
 
-  it('con shell monta el panel en el dock y no deja copia en la barra antigua', () => {
-    const { shell, calls } = mountUi(true);
+  it('monta el panel en el dock, una sola vez', () => {
+    const { shell, calls } = mountUi();
     const dock = shell.panelHost('llavero');
     expect(dock.querySelector('#keychainOpts')).not.toBeNull();
-    expect(shell.legacyLeftEl.querySelector('#keychain')).toBeNull();
     expect(document.querySelectorAll('#keychain').length).toBe(1);
     dock.querySelector<HTMLElement>('#keychainSizePlus')!.click();
     expect(calls.onKeychainSize).toEqual([[0.4]]);
-    shell.dispose();
-  });
-
-  it('sin shell monta el panel dentro de la barra izquierda', () => {
-    const { shell } = mountUi(false);
-    expect(shell.legacyLeftEl.querySelector('#keychainOpts')).not.toBeNull();
-    expect(shell.panelHost('llavero').querySelector('#keychain')).toBeNull();
-    expect(document.querySelectorAll('#keychain').length).toBe(1);
-    expect(document.querySelectorAll('#sectionShape').length).toBe(0);
     shell.dispose();
   });
 });

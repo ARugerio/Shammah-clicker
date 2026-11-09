@@ -79,32 +79,23 @@ describe('switchPanel', () => {
 });
 
 describe('createUi y el panel Switch', () => {
-  const mountUi = (withShell: boolean) => {
+  const mountUi = () => {
     document.body.innerHTML = '';
     const root = document.body.appendChild(document.createElement('div'));
     const shell = createShell(root);
     const { cb, calls } = makeCallbacks();
-    const ui = createUi(shell.legacyLeftEl, shell.legacyRightEl, shell.statusEl, cb, withShell ? shell : undefined);
+    const ui = createUi(shell.statusEl, cb, shell);
     ui.update(makeUiState({ switches: [a, b], activeSwitchIndex: 1 }));
     return { shell, calls };
   };
 
-  it('con shell monta el panel en el dock y no deja copia en la barra antigua', () => {
-    const { shell, calls } = mountUi(true);
+  it('monta el panel en el dock, una sola vez', () => {
+    const { shell, calls } = mountUi();
     const dock = shell.panelHost('switch');
     expect(dock.querySelectorAll('#switchChips [data-sw]').length).toBe(2);
-    expect(shell.legacyLeftEl.querySelector('#switchPad')).toBeNull();
     expect(document.querySelectorAll('#switchPad').length).toBe(1);
     dock.querySelector<HTMLElement>('#switchCount [data-count="3"]')!.click();
     expect(calls.onSwitchCount).toEqual([[3]]);
-    shell.dispose();
-  });
-
-  it('sin shell monta el panel dentro de la barra izquierda', () => {
-    const { shell } = mountUi(false);
-    expect(shell.legacyLeftEl.querySelectorAll('#switchChips [data-sw]').length).toBe(2);
-    expect(shell.panelHost('switch').querySelector('#switchPad')).toBeNull();
-    expect(document.querySelectorAll('#switchPad').length).toBe(1);
     shell.dispose();
   });
 });

@@ -261,22 +261,21 @@ describe('showColorPopoverAt', () => {
 });
 
 describe('createUi y el panel Colores', () => {
-  const mountUi = (withShell: boolean) => {
+  const mountUi = () => {
     document.body.innerHTML = '';
     const root = document.body.appendChild(document.createElement('div'));
     const shell = createShell(root);
     const { cb, calls } = makeCallbacks();
-    const ui = createUi(shell.legacyLeftEl, shell.legacyRightEl, shell.statusEl, cb, withShell ? shell : undefined);
+    const ui = createUi(shell.statusEl, cb, shell);
     ui.update(makeUiState({ palette: [p1, p2], colorCount: 2, editMode: 'extrude', selectedParts: ['top-color-0-1'] }));
     return { shell, calls, ui };
   };
 
-  it('con shell monta el panel en el dock, el relieve en el visor y no deja copia en la barra antigua', () => {
-    const { shell, calls, ui } = mountUi(true);
+  it('monta el panel en el dock y el relieve en el visor, una sola vez', () => {
+    const { shell, calls, ui } = mountUi();
     const dock = shell.panelHost('colores');
     expect(dock.querySelectorAll('#palette .fil-row:not(.body-row)').length).toBe(2);
     expect(dock.querySelector('#globalEdges')).not.toBeNull();
-    expect(shell.legacyLeftEl.querySelector('#sectionColors, #palette, #ccount, #globalEdges')).toBeNull();
     for (const id of ['sectionColors', 'palette', 'globalEdges', 'editModeBar', 'extrudePanel', 'edgesPanel', 'lettersToggle']) {
       expect(document.querySelectorAll('#' + id).length).toBe(1);
     }
@@ -287,15 +286,6 @@ describe('createUi y el panel Colores', () => {
     // La fachada sigue entregando todo lo que main.ts usa.
     expect(Object.keys(ui).sort()).toEqual(['addFontOption', 'addUploadedSvg', 'hexRgb', 'showColorPopoverAt', 'update']);
     expect(ui.hexRgb('#ff8000')).toEqual([255, 128, 0]);
-    shell.dispose();
-  });
-
-  it('sin shell monta el panel dentro de la barra izquierda', () => {
-    const { shell } = mountUi(false);
-    expect(shell.legacyLeftEl.querySelectorAll('#palette .fil-row:not(.body-row)').length).toBe(2);
-    expect(shell.legacyLeftEl.querySelector('#globalEdges')).not.toBeNull();
-    expect(shell.panelHost('colores').querySelector('#palette')).toBeNull();
-    expect(document.querySelectorAll('#palette').length).toBe(1);
     shell.dispose();
   });
 });

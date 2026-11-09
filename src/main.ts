@@ -121,16 +121,13 @@ function cloneImage(img: RgbaImage): RgbaImage {
 
 // ---- DOM / subsystems ----
 const shell = createShell(document.getElementById('shell-root')!);
-const sidebarLeft = shell.legacyLeftEl;
-const sidebarRight = shell.legacyRightEl;
 const statusEl = shell.statusEl;
 const viewer = createViewer(document.getElementById('app')!);
 
-// ---- Apply initial theme (system pref or saved preference) ----
+// ---- Tema inicial: el guardado, o claro por defecto ----
 viewer.setTheme(applyStoredTheme());
 
-
-const ui = createUi(sidebarLeft, sidebarRight, statusEl, {
+const ui = createUi(statusEl, {
   onUpload: (file) => openWizard(() => loadFileToImage(file)),
   onSample: (load) => openWizard(load),
   onColorCount: (n) => {

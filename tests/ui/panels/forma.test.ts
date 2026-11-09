@@ -93,33 +93,24 @@ describe('formaPanel', () => {
 });
 
 describe('createUi y el panel Forma', () => {
-  const mountUi = (withShell: boolean) => {
+  const mountUi = () => {
     document.body.innerHTML = '';
     const root = document.body.appendChild(document.createElement('div'));
     const shell = createShell(root);
     const { cb, calls } = makeCallbacks();
-    const ui = createUi(shell.legacyLeftEl, shell.legacyRightEl, shell.statusEl, cb, withShell ? shell : undefined);
+    const ui = createUi(shell.statusEl, cb, shell);
     ui.update(makeUiState({ capWidthMm: 55 }));
     return { shell, calls };
   };
 
-  it('con shell monta el panel en el dock y no deja copia en la barra antigua', () => {
-    const { shell, calls } = mountUi(true);
+  it('monta el panel en el dock, una sola vez', () => {
+    const { shell, calls } = mountUi();
     const w = shell.panelHost('forma').querySelector<HTMLInputElement>('#width')!;
     expect(w.value).toBe('55');
-    expect(shell.legacyLeftEl.querySelector('#width')).toBeNull();
     expect(document.querySelectorAll('#width').length).toBe(1);
     w.value = '40';
     w.dispatchEvent(new Event('input'));
     expect(calls.onWidth).toEqual([[40]]);
-    shell.dispose();
-  });
-
-  it('sin shell monta el panel dentro de la barra izquierda', () => {
-    const { shell } = mountUi(false);
-    expect(shell.legacyLeftEl.querySelector<HTMLInputElement>('#width')!.value).toBe('55');
-    expect(shell.panelHost('forma').querySelector('#width')).toBeNull();
-    expect(document.querySelectorAll('#width').length).toBe(1);
     shell.dispose();
   });
 });

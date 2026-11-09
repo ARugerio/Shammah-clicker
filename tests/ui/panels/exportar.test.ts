@@ -67,36 +67,14 @@ describe('exportarPanel', () => {
 });
 
 describe('createUi con el panel Exportar', () => {
-  const mountUi = (withShell: boolean) => {
+  it('un solo #export y un solo crédito, en el panel del dock', () => {
     document.body.innerHTML = '';
     const { cb } = makeCallbacks();
-    let ui;
-    let shell;
-    if (withShell) {
-      const root = document.body.appendChild(document.createElement('div'));
-      shell = createShell(root);
-      ui = createUi(shell.legacyLeftEl, shell.legacyRightEl, shell.statusEl, cb, shell);
-    } else {
-      const l = document.body.appendChild(document.createElement('aside'));
-      const r = document.body.appendChild(document.createElement('aside'));
-      const s = document.body.appendChild(document.createElement('div'));
-      ui = createUi(l, r, s, cb);
-    }
-    ui.update(makeUiState());
-    return shell;
-  };
-
-  it('con shell: un solo #export, en el panel del dock, y nada en los drawers viejos', () => {
-    const shell = mountUi(true)!;
-    expect(document.querySelectorAll('#export').length).toBe(1);
-    expect(shell.panelHost('exportar').querySelector('#export')).not.toBeNull();
-    expect(shell.legacyRightEl.querySelector('#export, .sidebar-credit')).toBeNull();
-    expect(shell.legacyLeftEl.querySelector('#undoBtn')).toBeNull();
-  });
-
-  it('sin shell: un solo #export y el contrato antiguo sigue funcionando', () => {
-    mountUi(false);
+    const shell = createShell(document.body.appendChild(document.createElement('div')));
+    createUi(shell.statusEl, cb, shell).update(makeUiState());
     expect(document.querySelectorAll('#export').length).toBe(1);
     expect(document.querySelectorAll('.sidebar-credit').length).toBe(1);
+    expect(shell.panelHost('exportar').querySelectorAll('#export, .sidebar-credit').length).toBe(2);
+    shell.dispose();
   });
 });

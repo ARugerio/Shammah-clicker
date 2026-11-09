@@ -14,9 +14,8 @@ const PANELS: { id: PanelId; label: string; icon: string }[] = [
 
 const BACK_ICON = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>';
 const WA_ICON = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.920v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.670A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.110L8.09 9.910a16 16 0 0 0 6 6l1.27-1.270a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.920z"/></svg>';
-const MENU_ICON = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>';
 
-/** Construye el esqueleto: barra superior, visor a pantalla completa, drawers provisionales y dock. */
+/** Construye el esqueleto: barra superior, visor a pantalla completa y dock con sus paneles. */
 export function createShell(root: HTMLElement): Shell {
   root.innerHTML = `
     <header id="topbar">
@@ -26,8 +25,6 @@ export function createShell(root: HTMLElement): Shell {
       </div>
       <div class="topbar-group topbar-right">
         <div class="topbar-group" data-slot="topbar-actions"></div>
-        <button type="button" class="topbar-btn" data-drawer="left" aria-expanded="false" aria-label="Opciones (izquierda)">${MENU_ICON}<span class="topbar-label">Opciones</span></button>
-        <button type="button" class="topbar-btn" data-drawer="right" aria-expanded="false" aria-label="Ajustes (derecha)">${MENU_ICON}<span class="topbar-label">Ajustes</span></button>
         <a class="topbar-btn topbar-wa" href="https://api.whatsapp.com/send?phone=5215559650025" target="_blank" rel="noopener noreferrer">${WA_ICON}<span class="topbar-label">Soporte WhatsApp</span></a>
       </div>
     </header>
@@ -37,8 +34,6 @@ export function createShell(root: HTMLElement): Shell {
         <div id="status">Iniciando motor 3D...</div>
         <div class="viewer-controls" data-slot="viewer-controls"></div>
       </div>
-      <aside id="sidebar-left" class="sidebar left legacy-drawer" hidden></aside>
-      <aside id="sidebar-right" class="sidebar right legacy-drawer" hidden></aside>
       <div class="dock-wrap">
         <div class="dock-panels"></div>
         <nav class="dock" aria-label="Herramientas"></nav>
@@ -96,26 +91,12 @@ export function createShell(root: HTMLElement): Shell {
     { signal: ac.signal },
   );
 
-  // Drawers provisionales (barras viejas): abiertos por defecto solo en pantallas anchas.
-  const wide = typeof window.innerWidth === 'number' && window.innerWidth >= 1000;
-  root.querySelectorAll<HTMLButtonElement>('[data-drawer]').forEach((btn) => {
-    const drawer = q(btn.dataset.drawer === 'left' ? '#sidebar-left' : '#sidebar-right');
-    const set = (open: boolean) => {
-      drawer.hidden = !open;
-      btn.setAttribute('aria-expanded', String(open));
-    };
-    set(wide);
-    btn.addEventListener('click', () => set(drawer.hidden));
-  });
-
   return {
     viewportEl: q('#viewport'),
     statusEl: q('#status'),
     topbarActionsEl: q('[data-slot="topbar-actions"]'),
     viewerControlsEl: q('[data-slot="viewer-controls"]'),
     dockEl,
-    legacyLeftEl: q('#sidebar-left'),
-    legacyRightEl: q('#sidebar-right'),
     panelHost: (id) => hosts.get(id)!,
     openPanel,
     openPanelId: () => current,

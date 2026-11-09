@@ -2,7 +2,7 @@ import type { BaseShapeKind, EditMode, EdgeSetting, EdgeStyle, KeychainParams, P
 import type { SectionAxis } from '../viewer/viewer';
 import type { RgbaImage } from '../image/decode';
 import type { FontOption } from '../image/letter';
-import type { PanelHandle, Shell } from './shell/types';
+import type { Shell } from './shell/types';
 import { formaPanel } from './panels/forma';
 import { switchPanel } from './panels/switch';
 import { coloresPanel, mountColorViewportTools } from './panels/colores';
@@ -106,103 +106,22 @@ export interface UiCallbacks {
 }
 
 export function createUi(
-  sidebarLeft: HTMLElement,
-  sidebarRight: HTMLElement,
   statusEl: HTMLElement,
   cb: UiCallbacks,
-  shell?: Shell,
+  shell: Shell,
   opts?: { onExplosion?: (t: number) => void },
 ) {
-  // Barra Lateral Izquierda
-  sidebarLeft.innerHTML = `
-    <div class="app-header">
-      <h1>SHAMMAH Clicker Studio</h1>
-      <p class="app-subtitle">Genera modelos 3D listos para tu Bambu Lab P2S</p>
-      <p class="app-credit">Plataforma operada por
-        <a class="app-credit-link" href="#" target="_blank" rel="noopener noreferrer">
-          SHAMMAH CREA 3D
-        </a>
-      </p>
-    </div>
+  // Cada panel vive en su hoja del dock.
+  const forma = formaPanel.mount(shell.panelHost('forma'), cb);
+  const switchH = switchPanel.mount(shell.panelHost('switch'), cb);
+  const llavero = llaveroPanel.mount(shell.panelHost('llavero'), cb);
+  const colores = coloresPanel.mount(shell.panelHost('colores'), cb);
+  const diseno = disenoPanel.mount(shell.panelHost('diseno'), cb);
+  const exportar = exportarPanel.mount(shell.panelHost('exportar'), cb);
 
-    <div id="geometrySettingsContainer"></div>
-
-  `;
-
-  // Barra Lateral Derecha
-  sidebarRight.innerHTML = '';
-
-  const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
-
-  // Panel Forma: con `shell` vive en el dock; sin él (contrato antiguo) se monta en un
-  // contenedor dentro de la barra izquierda, en el mismo sitio donde estaba antes.
-  let formaHost: HTMLElement;
-  if (shell) formaHost = shell.panelHost('forma');
-  else {
-    formaHost = document.createElement('div');
-    sidebarLeft.insertBefore(formaHost, $('geometrySettingsContainer'));
-  }
-  const forma = formaPanel.mount(formaHost, cb);
-
-  // Panel Switch: igual que Forma; en el contrato antiguo ocupa el final de la zona de geometría.
-  let switchHost: HTMLElement;
-  if (shell) switchHost = shell.panelHost('switch');
-  else {
-    switchHost = document.createElement('div');
-    $('geometrySettingsContainer').appendChild(switchHost);
-  }
-  const switchH = switchPanel.mount(switchHost, cb);
-
-  // Panel Llavero: sin `shell` va antes del panel Switch, donde estaba el bloque de ajustes.
-  let llaveroHost: HTMLElement;
-  if (shell) llaveroHost = shell.panelHost('llavero');
-  else {
-    llaveroHost = document.createElement('div');
-    $('geometrySettingsContainer').insertBefore(llaveroHost, switchHost);
-  }
-  const llavero = llaveroPanel.mount(llaveroHost, cb);
-
-  // Panel Colores (colores, suavizado, paleta y biselados de tapa y base). Sin `shell`
-  // ocupa el inicio de la zona de geometría, donde estaba "1 · Colores y Suavizado".
-  let coloresHost: HTMLElement;
-  if (shell) coloresHost = shell.panelHost('colores');
-  else {
-    coloresHost = document.createElement('div');
-    const geo = $('geometrySettingsContainer');
-    geo.insertBefore(coloresHost, geo.firstChild);
-  }
-  const colores = coloresPanel.mount(coloresHost, cb);
-
-  // Panel Diseño (tarjetas de importación, imagen, SVG, iconos, texto y limpieza). Sin `shell`
-  // ocupa el inicio de la barra derecha, antes del pie de exportación, donde estaba antes.
-  let disenoHost: HTMLElement;
-  if (shell) disenoHost = shell.panelHost('diseno');
-  else {
-    disenoHost = document.createElement('div');
-    sidebarRight.insertBefore(disenoHost, sidebarRight.firstChild);
-  }
-  const diseno = disenoPanel.mount(disenoHost, cb);
-
-  // Panel Exportar: sin `shell` se monta en la barra derecha, donde estaba el botón de descarga.
-  let exportarHost: HTMLElement;
-  if (shell) exportarHost = shell.panelHost('exportar');
-  else {
-    exportarHost = document.createElement('div');
-    sidebarRight.appendChild(exportarHost);
-  }
-  const exportar = exportarPanel.mount(exportarHost, cb);
-
-  // Acciones de la barra superior (historial, proyecto, ayuda, tema). Sin `shell` van al final
-  // de la barra izquierda. Ayuda reabre las pistas de primera visita (solo existen con `shell`).
-  const hints = shell ? mountHints(shell.dockEl) : null;
-  let topbarHost: HTMLElement;
-  if (shell) topbarHost = shell.topbarActionsEl;
-  else {
-    topbarHost = document.createElement('div');
-    topbarHost.className = 'btn-row';
-    sidebarLeft.appendChild(topbarHost);
-  }
-  const topbar = mountTopbarActions(topbarHost, cb, { onHelp: () => hints?.show() });
+  // Acciones de la barra superior (historial, proyecto, ayuda, tema). Ayuda reabre las pistas.
+  const hints = mountHints(shell.dockEl);
+  const topbar = mountTopbarActions(shell.topbarActionsEl, cb, { onHelp: () => hints.show() });
 
   // Soltar un archivo en cualquier parte de la ventana lo enruta según su tipo. Se queda aquí
   // (no en el panel Diseño) porque es global a la app y los paneles no tienen desmontaje.
@@ -216,26 +135,19 @@ export function createUi(
     else if (f.type.startsWith('image/')) cb.onUpload(f);
   });
 
-  const viewport = $('viewport');
-  let viewportTools: PanelHandle | null = null;
-  if (viewport) {
-    let overlay = $('loadingOverlay');
-    if (!overlay) {
-      overlay = document.createElement('div');
-      overlay.id = 'loadingOverlay';
-      overlay.className = 'loading-overlay';
-      overlay.setAttribute('hidden', '');
-      overlay.innerHTML = `<div class="loading-spinner"></div><div class="loading-text">Calculando geometría 3D...</div>`;
-      viewport.appendChild(overlay);
-    }
+  const viewport = shell.viewportEl;
+  const overlay = document.createElement('div');
+  overlay.id = 'loadingOverlay';
+  overlay.className = 'loading-overlay';
+  overlay.setAttribute('hidden', '');
+  overlay.innerHTML = `<div class="loading-spinner"></div><div class="loading-text">Calculando geometría 3D...</div>`;
+  viewport.appendChild(overlay);
 
-    // Relieve y bisel: flotan sobre el visor porque reaccionan a las piezas elegidas en 3D.
-    viewportTools = mountColorViewportTools(viewport, cb);
-  }
+  // Relieve y bisel: flotan sobre el visor porque reaccionan a las piezas elegidas en 3D.
+  const viewportTools = mountColorViewportTools(viewport, cb);
 
-  // Controles del visor (explosión y ojo del switch): solo con `shell`, que es siempre el caso en main.ts.
-  const viewerControls =
-    shell && opts?.onExplosion ? mountViewerControls(shell.viewerControlsEl, cb, opts.onExplosion) : null;
+  // Controles del visor (explosión y ojo del switch).
+  const viewerControls = opts?.onExplosion ? mountViewerControls(shell.viewerControlsEl, cb, opts.onExplosion) : null;
 
   const tipBubble = document.createElement('div');
   tipBubble.className = 'help-tip-bubble';
@@ -284,22 +196,16 @@ export function createUi(
     diseno.update(state);
     exportar.update(state);
     topbar.update(state);
-    viewportTools?.update(state);
+    viewportTools.update(state);
     viewerControls?.update(state);
 
-    const overlay = $('loadingOverlay');
-    if (overlay) {
-      if (state.building) {
-        overlay.removeAttribute('hidden');
-        const textEl = overlay.querySelector('.loading-text');
-        if (textEl) textEl.textContent = state.status;
-      } else {
-        overlay.setAttribute('hidden', '');
-      }
+    if (state.building) {
+      overlay.removeAttribute('hidden');
+      const textEl = overlay.querySelector('.loading-text');
+      if (textEl) textEl.textContent = state.status;
+    } else {
+      overlay.setAttribute('hidden', '');
     }
-
-    const extrudeTooltipEl = document.getElementById('extrudeTooltip');
-    if (extrudeTooltipEl) extrudeTooltipEl.classList.toggle('hidden', state.editMode !== 'extrude');
   }
 
   return {
