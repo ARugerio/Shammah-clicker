@@ -32,7 +32,7 @@ Excepciones al congelado, decididas al planificar contra el código real (2026-1
 - `src/viewer/viewer.ts` solo admite modos discretos (ensamblado/despiezado/corte). El deslizador de "Explosión" continuo
   exige un método aditivo `setExplosion(t: number)` (t en [0, 1]); `setView` no cambia.
 - `src/image/sample.ts` (42 líneas de datos) se reescribe para listar las cinco muestras propias.
-- `createUi` conserva su firma y gana un quinto parámetro opcional `shell`.
+- `createUi` queda con la firma final `createUi(statusEl: HTMLElement, cb: UiCallbacks, shell: Shell, opts?: { onExplosion?: (t: number) => void })`; los drawers provisionales y la ruta sin shell se retiraron en la Tarea 11.
 - Deshacer, Rehacer y Revertir pasan a la barra superior; el control de corte existente se conserva como icono secundario del visor.
 
 Fuera (congelado):
@@ -57,6 +57,8 @@ Fuera (congelado):
 
 Cada fila se verifica con capturas de antes y después.
 
+Nota: el crédito a Vostok Labs es persistente y vive en el visor (esquina inferior izquierda; sobre el dock en móvil), con fondo propio de contraste suficiente en ambos temas; el panel Exportar conserva además su línea de crédito.
+
 ## 5. Estilo (Taller cálido)
 - Tokens en variables CSS: fondo crema `#f6f1ea`, superficie blanca, borde `#ddd2c2`, acento `#db2777`, texto oscuro
   `#1f1b16`, texto apagado `#8a7f70`, sombra suave; radios 12–16 px; espaciado en múltiplos de 8 px.
@@ -65,7 +67,7 @@ Cada fila se verifica con capturas de antes y después.
 - Debe funcionar en escritorio y en móvil (375 px de ancho).
 
 ## 6. Arquitectura del código
-`createUi(state, callbacks)` se mantiene como fachada con la misma firma, para que `main.ts` siga funcionando.
+`createUi(statusEl, cb, shell, opts?)` es la fachada que usa `main.ts` (firma final: `opts?: { onExplosion?: (t: number) => void }`); monta los paneles del dock en el `shell` y ya no existe la ruta sin shell.
 `src/ui/` se organiza en:
 - `shell/`: layout (visor completo, barra superior, dock).
 - `panels/`: un archivo por panel — Forma, Diseño, Colores, Switch, Llavero, Exportar.
