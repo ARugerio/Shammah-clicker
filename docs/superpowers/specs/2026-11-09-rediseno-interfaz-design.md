@@ -44,7 +44,7 @@ Fuera (congelado):
 | Rasgo heredado | Reemplazo |
 |---|---|
 | Tres columnas (ajustes izq., visor centro, importar/descargar der.) | Visor a pantalla completa; dock inferior con paneles flotantes que se abren por icono |
-| Botones Ensamblado / Despiezado | Deslizador continuo "Explosión" dentro del visor |
+| Botones Ensamblado / Despiezado | Botón único con icono que separa o junta las piezas con animación, dentro del visor |
 | Interruptor "Mostrar switch MX" | Icono de ojo junto al deslizador, en el visor |
 | Interruptor "Eliminar fondo" en la columna derecha | Paso de limpieza dentro del panel Diseño, con vista antes/después |
 | Cinco imágenes de muestra (corazón, pata, perro, queso, radiación) | Cinco SVG propios dibujados desde cero (monograma S, llama, rayo, engrane, flor) |
@@ -71,7 +71,7 @@ Nota: el crédito a Vostok Labs es persistente y vive en el visor (esquina infer
 `src/ui/` se organiza en:
 - `shell/`: layout (visor completo, barra superior, dock).
 - `panels/`: un archivo por panel — Forma, Diseño, Colores, Switch, Llavero, Exportar.
-- `viewer-controls/`: deslizador de explosión y ojo del switch.
+- `viewer-controls/`: botón de separar piezas (animado) y ojo del switch.
 - `hints/`: pistas de primera vez.
 - `samples/`: los cinco SVG de muestra propios.
 - `theme.css` (tokens) y estilos por componente en lugar del `style.css` único de 2,045 líneas.

@@ -88,17 +88,15 @@
 /* Controles del visor (Task 9). */
 .vc-card {
   display: flex; align-items: center; gap: var(--space-2);
-  padding: 4px 8px 4px 12px; border-radius: var(--radius-md);
+  padding: 4px; border-radius: var(--radius-md);
   background: var(--t-superficie); border: 1px solid var(--t-borde); box-shadow: var(--t-sombra);
 }
-.vc-explode { display: flex; align-items: center; gap: var(--space-1); font: 600 12px/1 var(--font-ui); color: var(--t-texto); }
-.vc-explode input { width: 120px; accent-color: var(--t-acento); }
-.vc-eye {
-  display: inline-flex; align-items: center; justify-content: center; min-width: 40px; min-height: 40px;
+.vc-eye, .vc-split {
+  display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px;
   border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--t-apagado); cursor: pointer;
 }
-.vc-eye[aria-pressed="true"] { color: var(--t-acento); background: color-mix(in srgb, var(--t-acento) 12%, transparent); }
-.vc-eye:focus-visible, .vc-explode input:focus-visible { outline: 2px solid var(--t-acento); outline-offset: 2px; }
+.vc-eye[aria-pressed="true"], .vc-split[aria-pressed="true"] { color: var(--t-acento); background: color-mix(in srgb, var(--t-acento) 12%, transparent); }
+.vc-eye:focus-visible, .vc-split:focus-visible { outline: 2px solid var(--t-acento); outline-offset: 2px; }
 
 /* Barras flotantes de relieve y bisel: encima del dock y a la izquierda del panel abierto. */
 #viewport .edges-panel {

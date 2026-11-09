@@ -29,7 +29,7 @@ Si falta algo, la fila dice **Parcial** o **Pendiente** y explica por qué.
 
   Capturas de apoyo (escritorio, tema claro):
   - `escritorio-claro-diseno.jpg`: panel Diseño con las cinco muestras propias y el paso de limpieza.
-  - `escritorio-claro-explosion-ojo.jpg`: explosión al 40 % y el switch oculto con el ojo.
+  - `escritorio-claro-explosion-ojo.jpg`: captura tomada con el deslizador anterior (explosión al 40 %) y el switch oculto con el ojo; el control actual es un botón único.
   - `escritorio-claro-popover.jpg`: selector de color abierto desde el panel Colores.
   - `escritorio-claro-pistas.jpg`: pistas de primera visita, reabiertas con Ayuda.
 
@@ -38,8 +38,8 @@ Si falta algo, la fila dice **Parcial** o **Pendiente** y explica por qué.
 | # | Rasgo heredado | Reemplazo construido | Antes | Después | Prueba | Estado |
 |---|---|---|---|---|---|---|
 | 1 | Tres columnas (ajustes izq., visor centro, importar/descargar der.) | El visor ocupa toda la pantalla. Un dock inferior con seis iconos (Forma, Diseño, Colores, Switch, Llavero, Exportar) abre paneles flotantes, uno a la vez: a la derecha en escritorio y como hoja inferior en móvil. Ya no hay drawers provisionales ni botones Opciones/Ajustes. | `antes/escritorio-novedades.jpg` | `despues/escritorio-claro-muestra.jpg`, `despues/escritorio-claro-colores.jpg`, `despues/movil-claro-colores.jpg` | `tests/ui/shell.test.ts` ("crea seis botones de dock…", "no quedan drawers provisionales ni sus botones", "openPanel muestra solo ese panel…") | Cumplida |
-| 2 | Botones Ensamblado / Despiezado | Deslizador continuo "Explosión" (0 a 1) arriba a la izquierda del visor | `antes/escritorio-novedades.jpg` | `despues/escritorio-claro-explosion-ojo.jpg` | `tests/ui/viewerControls.test.ts` ("monta un solo deslizador y un solo ojo, sin #viewTabs ni #showswitch", "mover a 0.4 llama onExplosion(0.4)") | Cumplida |
-| 3 | Interruptor "Mostrar switch MX" | Botón de ojo junto al deslizador. Usa `aria-pressed` y cambia al ojo tachado cuando el switch está oculto. | `antes/escritorio-novedades.jpg` | `despues/escritorio-claro-explosion-ojo.jpg` | `tests/ui/viewerControls.test.ts` ("el ojo llama onShowSwitch(false)…") | Cumplida |
+| 2 | Botones Ensamblado / Despiezado | Botón único con icono («Separar piezas» / «Juntar piezas») y animación suave, arriba a la izquierda del visor | `antes/escritorio-novedades.jpg` | `despues/escritorio-claro-explosion-ojo.jpg` | `tests/ui/viewerControls.test.ts` ("monta un solo botón de separar y un solo ojo…", "clic desde separado…", "un segundo clic a mitad de animación…") | Cumplida |
+| 3 | Interruptor "Mostrar switch MX" | Botón de ojo junto al botón de separar. Usa `aria-pressed` y cambia al ojo tachado cuando el switch está oculto. | `antes/escritorio-novedades.jpg` | `despues/escritorio-claro-explosion-ojo.jpg` | `tests/ui/viewerControls.test.ts` ("el ojo llama onShowSwitch(false)…") | Cumplida |
 | 4 | Interruptor "Eliminar fondo" en la columna derecha | Bloque "Paso de limpieza" dentro del panel Diseño, en las vistas Imagen y SVG, con separador propio (`.cleanup-step`) | sin captura | `despues/escritorio-claro-diseno.jpg` | `tests/ui/panels/diseno.test.ts` ("Eliminar fondo es un paso de limpieza dentro del panel…") | **Parcial**: el paso existe dentro de Diseño, pero la "vista antes/después" del spec no está construida. El panel solo muestra el interruptor. |
 | 5 | Cinco imágenes de muestra (corazón, pata, perro, queso, radiación) | Cinco SVG propios (Monograma S, Llama, Rayo, Engrane, Flor) en `public/assets/samples/`. Las imágenes viejas se borraron de `public/assets/media/images/`. | sin captura | `despues/escritorio-claro-diseno.jpg` | `tests/no-legacy-content.test.ts` ("SAMPLES y SVG_SAMPLES son los cinco diseños propios", "cada src existe en public/", "… es un SVG limpio de un solo color", "public/assets/media … ya no existe") | Cumplida |
 | 6 | Modal "Últimas actualizaciones" | Se eliminó. Al cargar no aparece ningún modal. | `antes/escritorio-novedades.jpg` | `despues/escritorio-claro-muestra.jpg` | `tests/no-legacy-content.test.ts`: prohíbe "Últimas actualizaciones", "Trazado ultra-fino", "Módulo de Llavero", "Múltiples Switches" y "Entendido". `tests/ui/hints.test.ts`: "no hay modales heredados y Ayuda abre las pistas". | Cumplida |
@@ -55,7 +55,7 @@ del spec que no se construyeron en las tareas 1 a 11. No son regresiones de la l
 ## Observaciones de la verificación en navegador (2026-11-09)
 
 - Se recorrieron, a 1440×860 y 375×812, en tema claro y oscuro: carga de muestra por el diálogo
-  de preprocesamiento, los seis paneles del dock, deslizador de explosión, ojo, selector de color,
+  de preprocesamiento, los seis paneles del dock, botón de separar piezas, ojo, selector de color,
   modo Extruir (relieve), Ayuda y Tema. No hubo errores de JavaScript de la app. La consola solo
   mostró los fallos del WebSocket de recarga en caliente de Vite propios del panel de vista previa.
 - El motor 3D se dibujó en el panel de vista previa, así que las capturas muestran el modelo real.
