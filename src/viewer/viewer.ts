@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { toCreasedNormals } from 'three/addons/utils/BufferGeometryUtils.js';
-import { explosionOffset } from './explosion';
+import { explosionOffset, nextExplosion } from './explosion';
 import type { ClickerPart, MeshData, RGB, SwitchPlacement, ViewMode } from '../types';
 
 export type SectionAxis = 'x' | 'y' | 'z';
@@ -268,8 +268,8 @@ export function createViewer(container: HTMLElement): Viewer {
   }
 
   function setView(mode: ViewMode) {
+    explosionT = nextExplosion(viewMode, mode, explosionT);
     viewMode = mode;
-    if (mode !== 'section') explosionT = mode === 'exploded' ? 1 : 0;
     applyView();
   }
 
