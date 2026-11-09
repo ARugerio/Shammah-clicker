@@ -7,6 +7,7 @@ import { formaPanel } from './panels/forma';
 import { switchPanel } from './panels/switch';
 import { coloresPanel, mountColorViewportTools } from './panels/colores';
 import { disenoPanel } from './panels/diseno';
+import { llaveroPanel } from './panels/llavero';
 import { tip } from './shared/controls';
 import { hexRgb, showColorPopoverAt } from './shared/colorPopover';
 
@@ -132,46 +133,7 @@ export function createUi(
       </div>
     </div>
 
-    <div id="geometrySettingsContainer">
-      <details class="section section-collapsible" id="sectionShape">
-        <summary class="label collapsible-head">2 · Ajustes y Tolerancias P2S</summary>
-        <div class="collapsible-body">
-        <div class="keychain-panel" style="margin-bottom: 16px;">
-          <div class="switch-row" style="margin-bottom: 12px;">
-            <span class="switch-label">Llavero ${tip('Agrega un aro para enganchar tu clicker a las llaves.')}</span>
-            <label class="toggle"><input id="keychain" type="checkbox" /><span class="slider"></span></label>
-          </div>
-          <div id="keychainOpts" style="display:none;">
-            <div class="prow-stacked">
-              <div class="prow-header"><label>Posición del aro</label></div>
-              <div class="tol-stepper" id="keychainRotStepper">
-                <button class="btn" id="keychainRotMinus" type="button">⟲</button>
-                <span class="tol-val" id="keychainAngleVal">90°</span>
-                <button class="btn" id="keychainRotPlus" type="button">⟳</button>
-              </div>
-            </div>
-            <div class="prow-stacked">
-              <div class="prow-header"><label>Deslizamiento (offset)</label></div>
-              <div class="tol-stepper" id="keychainOffsetStepper">
-                <button class="btn" id="keychainOffsetMinus" type="button">−</button>
-                <span class="tol-val" id="keychainOffsetVal">0.0 mm</span>
-                <button class="btn" id="keychainOffsetPlus" type="button">+</button>
-              </div>
-            </div>
-            <div class="prow-stacked">
-              <div class="prow-header"><label>Tamaño del agujero</label></div>
-              <div class="tol-stepper" id="keychainSizeStepper">
-                <button class="btn" id="keychainSizeMinus" type="button">−</button>
-                <span class="tol-val" id="keychainSizeVal">5.2 mm</span>
-                <button class="btn" id="keychainSizePlus" type="button">+</button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        </div>
-      </details>
-    </div>
+    <div id="geometrySettingsContainer"></div>
 
     <div class="sidebar-sticky-footer">
       <div class="btn-row" id="historyControls">
@@ -241,6 +203,15 @@ export function createUi(
   }
   const switchH = switchPanel.mount(switchHost, cb);
 
+  // Panel Llavero: sin `shell` va antes del panel Switch, donde estaba el bloque de ajustes.
+  let llaveroHost: HTMLElement;
+  if (shell) llaveroHost = shell.panelHost('llavero');
+  else {
+    llaveroHost = document.createElement('div');
+    $('geometrySettingsContainer').insertBefore(llaveroHost, switchHost);
+  }
+  const llavero = llaveroPanel.mount(llaveroHost, cb);
+
   // Panel Colores (colores, suavizado, paleta y biselados de tapa y base). Sin `shell`
   // ocupa el inicio de la zona de geometría, donde estaba "1 · Colores y Suavizado".
   let coloresHost: HTMLElement;
@@ -294,15 +265,6 @@ export function createUi(
     // Relieve y bisel: flotan sobre el visor porque reaccionan a las piezas elegidas en 3D.
     viewportTools = mountColorViewportTools(viewport, cb);
   }
-
-  const keychain = $<HTMLInputElement>('keychain');
-  keychain.addEventListener('change', () => cb.onKeychainToggle(keychain.checked));
-  $('keychainRotMinus').addEventListener('click', () => cb.onKeychainRotate(-15));
-  $('keychainRotPlus').addEventListener('click', () => cb.onKeychainRotate(15));
-  $('keychainOffsetMinus').addEventListener('click', () => cb.onKeychainOffset(-1.0));
-  $('keychainOffsetPlus').addEventListener('click', () => cb.onKeychainOffset(1.0));
-  $('keychainSizeMinus').addEventListener('click', () => cb.onKeychainSize(-0.4));
-  $('keychainSizePlus').addEventListener('click', () => cb.onKeychainSize(0.4));
 
   const viewTabs = $('viewTabs');
   viewTabs.addEventListener('click', (e) => {
@@ -674,21 +636,11 @@ export function createUi(
     statusEl.innerHTML = (state.building ? '<span class="spinner"></span> ' : '') + state.status;
     forma.update(state);
     switchH.update(state);
+    llavero.update(state);
     colores.update(state);
     diseno.update(state);
     viewportTools?.update(state);
 
-    const kc = state.keychain;
-    keychain.checked = kc.enabled;
-    const kcOpts = document.getElementById('keychainOpts');
-    if (kcOpts) kcOpts.style.display = kc.enabled ? '' : 'none';
-    const kcAngleEl = document.getElementById('keychainAngleVal');
-    if (kcAngleEl) kcAngleEl.textContent = `${Math.round((((kc.angleDeg % 360) + 360) % 360))}°`;
-    const kcOffsetEl = document.getElementById('keychainOffsetVal');
-    if (kcOffsetEl) kcOffsetEl.textContent = `${(kc.offsetMm ?? 0.0).toFixed(1)} mm`;
-    const kcSizeEl = document.getElementById('keychainSizeVal');
-    if (kcSizeEl) kcSizeEl.textContent = `${kc.holeDiameterMm.toFixed(1)} mm`;
-    
     $<HTMLInputElement>('showswitch').checked = state.showSwitch;
 
     for (const b of viewTabs.querySelectorAll<HTMLElement>('button')) b.classList.toggle('active', b.dataset.view === state.view);
