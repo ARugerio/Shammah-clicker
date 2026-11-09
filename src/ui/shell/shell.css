@@ -1,4 +1,4 @@
-/* Esqueleto: barra superior, visor a pantalla completa, drawers provisionales y dock. */
+/* Esqueleto: barra superior, visor a pantalla completa y dock. */
 
 #shell-root { display: contents; }
 
@@ -13,22 +13,13 @@
 .viewer-controls { position: absolute; top: var(--space-2); left: var(--space-2); z-index: 12; }
 .viewer-controls:empty { display: none; }
 
-/* Drawers provisionales: las barras viejas, sobre el visor. */
-.legacy-drawer {
-  position: absolute; top: 0; bottom: 0; z-index: 10;
-  width: clamp(300px, 24vw, 380px); max-width: calc(100vw - 16px);
-  height: auto;
-  box-shadow: var(--t-sombra);
-}
-.legacy-drawer[hidden] { display: none; }
-.legacy-drawer.left { left: 0; }
-.legacy-drawer.right { right: 0; }
-
 #status {
   left: 50%; transform: translateX(-50%); bottom: 88px; z-index: 15;
   max-width: min(70ch, calc(100vw - 32px)); width: max-content;
   border-radius: var(--radius-sm);
 }
+/* Sin mensaje no se dibuja la píldora vacía sobre el dock. */
+#status:empty { display: none; }
 
 .dock-wrap {
   position: absolute; left: 0; right: 0; bottom: var(--space-2); z-index: 30;
@@ -53,8 +44,9 @@
 .dock-btn:focus-visible, .topbar-btn:focus-visible { outline: 2px solid var(--t-acento); outline-offset: 2px; }
 .dock-label { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-/* Los paneles se anclan a la derecha del visor para dejar el modelo visible; en móvil son una hoja inferior. */
-.dock-panels { position: absolute; right: var(--space-2); bottom: calc(100% + var(--space-1)); width: min(360px, calc(100vw - 32px)); }
+/* Los paneles se anclan a la derecha del visor para dejar el modelo visible; en móvil son una hoja inferior.
+   z-index 1: por encima de la tarjeta de pistas, que comparte el contenedor del dock. */
+.dock-panels { position: absolute; z-index: 1; right: var(--space-2); bottom: calc(100% + var(--space-1)); width: min(360px, calc(100vw - 32px)); }
 .dock-panel {
   max-height: calc(100vh - 180px); overflow-y: auto;
   background: var(--t-superficie); border: 1px solid var(--t-borde);
@@ -64,16 +56,15 @@
 .dock-panel-body { padding: var(--space-2); }
 .dock-panel-body:empty::after { content: 'Próximamente'; color: var(--t-apagado); font-size: 14px; }
 
-@media (max-width: 999px) {
-  .legacy-drawer { bottom: 88px; }
-}
 @media (max-width: 720px) {
   .dock-panels { left: var(--space-2); right: var(--space-2); width: auto; }
   .dock-panel { max-height: 60vh; }
 }
 @media (max-width: 719px) {
   .topbar-label { display: none; }
-  #topbar { padding: var(--space-1); gap: var(--space-1); }
+  /* En teléfono las acciones bajan a una segunda fila para no desbordar el ancho de la pantalla. */
+  #topbar { padding: var(--space-1); gap: var(--space-1); flex-wrap: wrap; }
+  .topbar-right { flex-wrap: wrap; justify-content: flex-end; min-width: 0; }
   .topbar-btn { padding: 8px 10px; }
 }
 
@@ -81,6 +72,10 @@
 .topbar-action { padding: 8px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; color: var(--t-texto); }
 .topbar-action:disabled { opacity: 0.4; cursor: not-allowed; }
 .topbar-action svg { display: block; }
+/* El tema muestra solo el icono del modo al que se cambia. */
+#themeToggle svg { display: none; }
+:root[data-theme="dark"] #themeToggle svg.icon-sun { display: block; }
+:root[data-theme="light"] #themeToggle svg.icon-moon { display: block; }
 .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 /* Controles del visor (Task 9). */
@@ -105,8 +100,6 @@
 }
 @media (max-width: 720px) {
   #viewport .edges-panel { right: var(--space-2); left: var(--space-2); max-width: none; bottom: 88px; }
-}
-@media (max-width: 720px) {
   /* Debajo de la barra de modos y del interruptor de letras, que están centrados arriba. */
   .viewer-controls { top: 112px; }
 }

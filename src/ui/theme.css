@@ -21,6 +21,7 @@
   --t-texto: #1f1b16;
   --t-apagado: #8a7f70;
   --t-sombra: 0 8px 24px rgba(31, 27, 22, 0.12);
+  --t-exito: #10b981;
 }
 
 :root[data-theme="dark"] {
@@ -33,9 +34,10 @@
   --t-texto: #f3ece2;
   --t-apagado: #a4988a;
   --t-sombra: 0 8px 24px rgba(0, 0, 0, 0.45);
+  --t-exito: #36c08a;
 }
 
-/* Los tokens viejos (style.css) se reasignan a los nuevos hasta que la Tarea 11 los limpie. */
+/* Nombres de tokens que style.css sigue usando, apuntados a los del tema. */
 :root,
 :root[data-theme="light"],
 :root[data-theme="dark"] {
@@ -48,6 +50,7 @@
   --muted: var(--t-apagado);
   --accent: var(--t-acento);
   --accent-text: var(--t-acento-texto);
+  --accent-2: var(--t-exito);
 }
 
 html, body { font-family: var(--font-ui); }
