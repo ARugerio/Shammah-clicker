@@ -1,0 +1,47 @@
+import type { UiState } from '../../src/ui/ui';
+
+/** Estado inicial equivalente al de src/main.ts. */
+export function makeUiState(over: Partial<UiState> = {}): UiState {
+  return {
+    status: '',
+    building: false,
+    hasParts: true,
+    colorCount: 4,
+    palette: [],
+    baseShape: 'outline',
+    capWidthMm: 35,
+    topThickness: 1.5,
+    imageDepth: 0.8,
+    tolerance: 0.4,
+    stemTolerance: 0,
+    switches: [{ x: 0, y: 0, rotation: 0 }],
+    activeSwitchIndex: 0,
+    smoothing: 0.1,
+    keychain: { enabled: false, style: 'loop', angleDeg: 90, holeDiameterMm: 5.2, offsetMm: 0 },
+    removeBg: true,
+    view: 'exploded',
+    showSwitch: true,
+    importMode: 'image',
+    currentIconName: 'circle',
+    colorMode: 'normal',
+    limitedColors: [],
+    bodyColorRgb: [240, 240, 240],
+    paletteOverrides: [],
+    baseColorOverride: null,
+    partOverrides: {},
+    editMode: 'color',
+    edgeSettings: [
+      { target: 'capTop', style: 'chamfer', radius: 0.5 },
+      { target: 'clickerBase', style: 'chamfer', radius: 0.5 },
+    ],
+    extrudeChamfer: false,
+    separateLetters: false,
+    extrudeHeight: null,
+    componentHeights: {},
+    selectedParts: [],
+    canUndo: false,
+    canRedo: false,
+    canRefresh: false,
+    ...over,
+  };
+}

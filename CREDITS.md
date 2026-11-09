@@ -17,6 +17,8 @@ lo usa bajo licencia comercial y lo personaliza y mantiene de forma independient
 | @xmldom/xmldom (desarrollo) | MIT |
 | typescript (desarrollo) | Apache-2.0 |
 | vite (desarrollo) | MIT |
+| vitest (desarrollo) | MIT |
+| happy-dom (desarrollo) | MIT |
 
 ## Fuentes
 Las fuentes incluidas en `public/fonts/` son de Google Fonts, bajo SIL Open Font

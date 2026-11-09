@@ -1,0 +1,10 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`3MF dorado > es determinista y coincide con el snapshot 1`] = `
+{
+  "3D/3dmodel.model": "36c398d4287e7804f998eabb5005a948922201eec1213d44aeb3ea44169b8d3d",
+  "Metadata/model_settings.config": "be2aba0612e21ab87bbeb8ec4edcc60d9df03bbb0e128a66aa81b816344215a1",
+  "[Content_Types].xml": "e1c3af6da2b2500cb4b84f35b941c84d901e4327e98fc4ee35bd5774e1bca23c",
+  "_rels/.rels": "465f67e7a55f044dfaa29cacc1516cf948872cdea5b4379eae717c4245388416",
+}
+`;
