@@ -1004,8 +1004,8 @@ function firstLine(s: string): string {
 }
 
 // SHAMMAH Studio - Herramienta propietaria de SHAMMAH 3D basada en el motor de
-// Vostok Labs (uso bajo licencia comercial). El crédito visible está en el pie de
-// la barra lateral (ui.ts) y el detalle de licencias en CREDITS.md.
+// Vostok Labs (uso bajo licencia comercial). El crédito visible está en el visor
+// (shell.ts, siempre a la vista) y en el panel Exportar, y el detalle de licencias en CREDITS.md.
 
 // ---- Render / project save-load / AI prompt ----
 function downloadBlob(blob: Blob, fileName: string) {

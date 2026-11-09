@@ -8,7 +8,7 @@ import { getFilamentNameAndHex, rgbHex, showColorPickerBelow } from '../shared/c
 // El contenedor conserva el id `sectionColors`; `globalEdges` (biselados de tapa y base) vive aquí.
 const TEMPLATE = `
   <div class="section" id="sectionColors">
-    <span class="label">1 · Colores y Suavizado</span>
+    <span class="label">Colores y Suavizado</span>
     <div class="field" id="colorCountField">
       <label for="ccount">Paleta AMS ${tip('Cantidad de colores o extrusores que utilizará tu AMS.')}</label>
       <select id="ccount">

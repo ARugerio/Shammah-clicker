@@ -36,7 +36,7 @@ const TEMPLATE = `
   </div>
 
   <div class="section" id="formaSettings">
-    <span class="label">2 · Ajustes y Tolerancias P2S</span>
+    <span class="label">Ajustes y Tolerancias P2S</span>
     <div class="prow-stacked">
       <div class="prow-header">
         <label for="topthick">Grosor de respaldo ${tip('Grosor de la base sólida debajo de los colores de la imagen, en mm.')}</label>

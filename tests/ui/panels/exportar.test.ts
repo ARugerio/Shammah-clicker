@@ -49,11 +49,28 @@ describe('exportarPanel', () => {
     expect(calls.onExport).toEqual([[]]);
   });
 
+  it('el resumen cuenta colores distintos en uso: región, cuerpo y base', () => {
+    const one = [palette[1]];
+    handle.update(makeUiState({ palette: one, bodyColorRgb: [255, 255, 255], baseColorOverride: [0, 0, 0] }));
+    expect(host.querySelectorAll('.export-chip').length).toBe(3);
+    expect(host.querySelector('.export-summary-count')!.textContent).toBe('Colores en uso: 3');
+    // iguales -> se deduplican
+    handle.update(makeUiState({ palette: one, bodyColorRgb: [255, 0, 0], baseColorOverride: [255, 0, 0] }));
+    expect(host.querySelectorAll('.export-chip').length).toBe(1);
+    expect(host.querySelector('.export-summary-count')!.textContent).toBe('Color en uso: 1');
+    // override de pieza distinto suma
+    handle.update(makeUiState({ palette: one, bodyColorRgb: [255, 0, 0], partOverrides: { 'top-color-0-0': [1, 2, 3] } }));
+    expect(host.querySelectorAll('.export-chip').length).toBe(2);
+    // paleta vacía: solo el color del cuerpo
+    handle.update(makeUiState({ palette: [], bodyColorRgb: [9, 9, 9] }));
+    expect(host.querySelectorAll('.export-chip').length).toBe(1);
+  });
+
   it('el resumen muestra un chip por entrada de la paleta y la cuenta', () => {
-    handle.update(makeUiState({ palette }));
+    handle.update(makeUiState({ palette, bodyColorRgb: [0, 0, 0] }));
     expect(host.querySelectorAll('.export-chip').length).toBe(3);
     expect(host.querySelector('.export-summary-count')!.textContent).toContain('3');
-    handle.update(makeUiState({ palette: palette.slice(0, 1) }));
+    handle.update(makeUiState({ palette: palette.slice(0, 1), bodyColorRgb: [0, 0, 0] }));
     expect(host.querySelectorAll('.export-chip').length).toBe(1);
     expect(host.querySelector('.export-summary-count')!.textContent).toContain('1');
   });

@@ -24,13 +24,27 @@ export const exportarPanel: PanelModule = {
     return {
       update(state: UiState) {
         exportBtn.disabled = !state.hasParts || state.building;
-        const n = state.palette.length;
+        // Colores distintos del 3MF: regiones (palette ya trae los cambios de paleta), cuerpo, base y piezas.
+        const seen = new Set<string>();
+        const colors: number[][] = [];
+        const add = (rgb: ArrayLike<number> | null | undefined) => {
+          if (!rgb) return;
+          const k = `${rgb[0]},${rgb[1]},${rgb[2]}`;
+          if (seen.has(k)) return;
+          seen.add(k);
+          colors.push([rgb[0], rgb[1], rgb[2]]);
+        };
+        state.palette.forEach((p) => add(p.filamentRgb));
+        add(state.bodyColorRgb);
+        add(state.baseColorOverride);
+        Object.values(state.partOverrides ?? {}).forEach(add);
+        const n = colors.length;
         count.textContent = `${n === 1 ? 'Color en uso' : 'Colores en uso'}: ${n}`;
         chips.replaceChildren(
-          ...state.palette.map((p) => {
+          ...colors.map((c) => {
             const chip = document.createElement('span');
             chip.className = 'export-chip';
-            const [r, g, b] = p.filamentRgb;
+            const [r, g, b] = c;
             chip.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
             chip.title = `rgb(${r}, ${g}, ${b})`;
             return chip;

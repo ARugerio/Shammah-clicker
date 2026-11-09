@@ -1,6 +1,6 @@
-// Asistente estilo Bambu: conversión de imagen a modelo 3D. Un paso modal único:
+// Asistente estilo Bambu (se abre como diálogo modal): conversión de imagen a modelo 3D. Un paso modal único:
 //   Preprocesamiento: proporción de recorte, grosor y controles deslizantes de tono/color.
-// La eliminación del fondo se activa/desactiva en la barra lateral principal (no aquí), por lo que
+// La eliminación del fondo se activa/desactiva en el panel Diseño (no aquí), por lo que
 // este asistente solo ajusta tonos y recorta la imagen. Al confirmar, entrega la imagen ajustada
 // (con el fondo intacto) junto con los parámetros; el proceso llamador ejecuta el flujo de
 // vectorizado y construcción 3D (donde se vuelve a calcular la eliminación de fondo, con valor

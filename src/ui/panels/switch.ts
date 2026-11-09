@@ -8,7 +8,7 @@ const SWITCH_STEP = 1;
 // El contenedor conserva el id `sectionSwitch` porque el tutorial lo señala.
 const TEMPLATE = `
   <div class="section" id="sectionSwitch">
-    <span class="label">3 · Posición de Interruptor</span>
+    <span class="label">Posición de Interruptor</span>
   <div class="field" style="margin-bottom:10px;">
         <label>Nº de Switches ${tip('Puedes usar de 1 a 3 switches mecánicos para piezas muy anchas o largas.')}</label>
         <div class="tabs" id="switchCount" role="tablist">
