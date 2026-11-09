@@ -5,6 +5,7 @@ import type { RgbaImage } from '../image/decode';
 import type { FontOption } from '../image/letter';
 import { FONT_OPTIONS, loadBundledFonts } from '../image/letter';
 import { LUCIDE_ICONS, buildSvg, svgDataUrl } from '../image/lucideIcons';
+import type { Shell } from './shell/types';
 
 /** Tolerancia neutra base (mm). El control muestra la desviación sobre este número. */
 const BASE_SOCKET_TOL = 0.4;
@@ -143,7 +144,8 @@ export function createUi(
   sidebarLeft: HTMLElement,
   sidebarRight: HTMLElement,
   statusEl: HTMLElement,
-  cb: UiCallbacks
+  cb: UiCallbacks,
+  _shell?: Shell
 ) {
   const tip = (text: string) =>
     `<span class="help-tip" tabindex="0" role="img" aria-label="Ayuda: ${text.replace(/"/g, '&quot;')}" data-tip="${text.replace(/"/g, '&quot;')}">?</span>`;

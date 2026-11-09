@@ -6,11 +6,11 @@
     <title>SHAMMAH Clicker Studio | Bambu Lab P2S</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <script>
       (function() {
-        const saved = localStorage.getItem('clicker_theme');
+        const saved = localStorage.getItem('clicker-theme');
         const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
         const theme = saved || (systemDark ? 'dark' : 'light');
         document.documentElement.setAttribute('data-theme', theme);
@@ -18,48 +18,8 @@
     </script>
   </head>
   <body>
-    <!-- BARRA SUPERIOR PERSONALIZADA SHAMMAH CREA 3D -->
-    <header id="topbar">
-      <div class="topbar-group topbar-left">
-        <!-- Retorno al Mostrador Principal -->
-        <a class="topbar-btn" href="https://arugerio.github.io/Shammah3d/" style="font-weight: 700; color: #10b981;">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="m15 18-6-6 6-6"/>
-          </svg>
-          Volver al Mostrador
-        </a>
-
-        <!-- Distintivo de Taller y Tecnología -->
-        <span class="topbar-btn" style="cursor: default; opacity: 0.9;">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <polygon points="12 2 2 7 12 12 22 7 12 2"/>
-            <polyline points="2 17 12 22 22 17"/>
-            <polyline points="2 12 12 17 22 12"/>
-          </svg>
-          SHAMMAH Studio · Bambu Lab P2S
-        </span>
-      </div>
-
-      <div class="topbar-group topbar-right">
-        <!-- Enlace Directo a WhatsApp de Taller -->
-        <a class="topbar-btn" href="https://api.whatsapp.com/send?phone=5215559650025" target="_blank" rel="noopener noreferrer" style="color: #22c55e;">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
-          </svg>
-          Soporte WhatsApp
-        </a>
-      </div>
-    </header>
-
-    <!-- LIENZO Y ESTRUCTURA DE LA APLICACIÓN 3D -->
-    <div id="layout">
-      <aside id="sidebar-left" class="sidebar left"></aside>
-      <div id="viewport">
-        <div id="app"></div>
-        <div id="status">Iniciando motor 3D...</div>
-      </div>
-      <aside id="sidebar-right" class="sidebar right"></aside>
-    </div>
+    <!-- El esqueleto (barra superior, visor, drawers y dock) lo construye createShell() -->
+    <div id="shell-root"></div>
 
     <!-- CARGA DEL MOTOR PRINCIPAL -->
     <script type="module" src="/src/main.ts"></script>

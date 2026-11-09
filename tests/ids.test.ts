@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, it, expect, beforeAll } from 'vitest';
 import { createUi } from '../src/ui/ui';
+import { createShell } from '../src/ui/shell/shell';
 import { collectReferencedIds } from './helpers/idInventory';
 import { makeCallbacks } from './fixtures/callbacks';
 import { makeUiState } from './fixtures/uiState';
@@ -33,16 +34,12 @@ const ON_DEMAND_IDS: Record<string, string> = {
 };
 
 beforeAll(() => {
-  const html = readFileSync(resolve(__dirname, '../index.html'), 'utf8');
-  const body = /<body[^>]*>([\s\S]*)<\/body>/.exec(html)![1].replace(/<script[\s\S]*?<\/script>/g, '');
-  document.body.innerHTML = body;
+  // index.html solo trae #shell-root; el esqueleto (con #app, #status y las barras) lo arma createShell.
+  const shellRoot = document.body.appendChild(document.createElement('div'));
+  shellRoot.id = 'shell-root';
+  const shell = createShell(shellRoot);
   const { cb } = makeCallbacks();
-  const ui = createUi(
-    document.getElementById('sidebar-left')!,
-    document.getElementById('sidebar-right')!,
-    document.getElementById('status')!,
-    cb,
-  );
+  const ui = createUi(shell.legacyLeftEl, shell.legacyRightEl, shell.statusEl, cb, shell);
   ui.update(makeUiState());
 });
 

@@ -1,4 +1,7 @@
 import './style.css';
+import './ui/theme.css';
+import './ui/shell/shell.css';
+import { createShell } from './ui/shell/shell';
 import { createStore } from './store/store';
 import { createViewer } from './viewer/viewer';
 import { createUi, type UiState } from './ui/ui';
@@ -114,9 +117,10 @@ function cloneImage(img: RgbaImage): RgbaImage {
 }
 
 // ---- DOM / subsystems ----
-const sidebarLeft = document.getElementById('sidebar-left')!;
-const sidebarRight = document.getElementById('sidebar-right')!;
-const statusEl = document.getElementById('status')!;
+const shell = createShell(document.getElementById('shell-root')!);
+const sidebarLeft = shell.legacyLeftEl;
+const sidebarRight = shell.legacyRightEl;
+const statusEl = shell.statusEl;
 const viewer = createViewer(document.getElementById('app')!);
 
 // ---- Apply initial theme (system pref or saved preference) ----

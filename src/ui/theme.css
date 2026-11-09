@@ -1,0 +1,53 @@
+/* Tema "Taller cálido". Claro por defecto; oscuro opcional.
+   Se activa con data-theme en <html> (mismo mecanismo y clave 'clicker-theme' que onThemeChange). */
+
+:root {
+  --font-ui: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --space-1: 8px;
+  --space-2: 16px;
+  --space-3: 24px;
+  --space-4: 32px;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --t-fondo: #f6f1ea;
+  --t-superficie: #ffffff;
+  --t-borde: #ddd2c2;
+  --t-acento: #db2777;
+  --t-acento-texto: #ffffff;
+  --t-texto: #1f1b16;
+  --t-apagado: #8a7f70;
+  --t-sombra: 0 8px 24px rgba(31, 27, 22, 0.12);
+}
+
+:root[data-theme="dark"], :root:not([data-theme="light"]) {
+  color-scheme: dark;
+  --t-fondo: #1c1814;
+  --t-superficie: #26211b;
+  --t-borde: #3d352b;
+  --t-acento: #ec4899;
+  --t-acento-texto: #ffffff;
+  --t-texto: #f3ece2;
+  --t-apagado: #a4988a;
+  --t-sombra: 0 8px 24px rgba(0, 0, 0, 0.45);
+}
+
+/* Los tokens viejos (style.css) se reasignan a los nuevos hasta que la Tarea 11 los limpie. */
+:root[data-theme="light"],
+:root[data-theme="dark"],
+:root:not([data-theme="light"]) {
+  --font-display: var(--font-ui);
+  --bg: var(--t-fondo);
+  --panel: var(--t-superficie);
+  --panel-2: color-mix(in srgb, var(--t-fondo) 70%, var(--t-superficie));
+  --line: var(--t-borde);
+  --text: var(--t-texto);
+  --muted: var(--t-apagado);
+  --accent: var(--t-acento);
+  --accent-text: var(--t-acento-texto);
+}
+
+html, body { font-family: var(--font-ui); }
