@@ -2,8 +2,8 @@
 
 exports[`3MF dorado > es determinista y coincide con el snapshot 1`] = `
 {
-  "3D/3dmodel.model": "36c398d4287e7804f998eabb5005a948922201eec1213d44aeb3ea44169b8d3d",
-  "Metadata/model_settings.config": "be2aba0612e21ab87bbeb8ec4edcc60d9df03bbb0e128a66aa81b816344215a1",
+  "3D/3dmodel.model": "6eb8cee022878f103d41919c4542001a1978989d4e4de35f04bb0456a9bc9b40",
+  "Metadata/model_settings.config": "d9a575c68e9d552fa2d7d8b043b3cfb8563694c33232e7f38608e41811da3517",
   "[Content_Types].xml": "e1c3af6da2b2500cb4b84f35b941c84d901e4327e98fc4ee35bd5774e1bca23c",
   "_rels/.rels": "465f67e7a55f044dfaa29cacc1516cf948872cdea5b4379eae717c4245388416",
 }
