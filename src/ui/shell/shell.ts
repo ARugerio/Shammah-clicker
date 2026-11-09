@@ -113,6 +113,7 @@ export function createShell(root: HTMLElement): Shell {
     statusEl: q('#status'),
     topbarActionsEl: q('[data-slot="topbar-actions"]'),
     viewerControlsEl: q('[data-slot="viewer-controls"]'),
+    dockEl,
     legacyLeftEl: q('#sidebar-left'),
     legacyRightEl: q('#sidebar-right'),
     panelHost: (id) => hosts.get(id)!,

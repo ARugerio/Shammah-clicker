@@ -1225,6 +1225,9 @@ body.tutorial-active.focus-center #viewport {
   filter: invert(1);
   opacity: 0.85;
 }
+/* Galería de SVG: son diseños oscuros reales, no iconos blancos; se muestran tal cual sobre fondo claro. */
+#uploadGallery .icon { background: #f3ece2; }
+#uploadGallery .icon img { filter: none; opacity: 1; }
 
 /* Lucide Search Wrap */
 #iconSearchWrap {
@@ -1614,6 +1617,7 @@ button.fil-chip:active {
   aspect-ratio: 1;
   object-fit: contain;
   border-radius: 4px;
+  background: #f3ece2; /* las muestras son oscuras: fondo claro para que se vean también en tema oscuro */
 }
 .sample-inline-item span {
   font-size: 11px;

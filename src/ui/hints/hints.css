@@ -1,0 +1,22 @@
+/* Pistas de primera visita: tarjeta anclada sobre el dock, sin overlay. */
+.hints-card {
+  position: absolute; left: 50%; bottom: calc(100% + var(--space-1)); transform: translateX(-50%);
+  z-index: 0; width: min(340px, calc(100vw - 32px));
+  padding: var(--space-2); box-sizing: border-box;
+  background: var(--t-superficie); color: var(--t-texto);
+  border: 1px solid var(--t-borde); border-left: 3px solid var(--t-acento);
+  border-radius: var(--radius-md); box-shadow: var(--t-sombra);
+  font: 14px/1.4 var(--font-ui);
+}
+.hints-card[hidden] { display: none; }
+.hints-title { margin: 0 0 6px; font-weight: 700; font-size: 15px; }
+.hints-steps { margin: 0 0 var(--space-2); padding-left: 20px; }
+.hints-steps li + li { margin-top: 4px; }
+.hints-close {
+  min-height: 36px; padding: 6px 14px; cursor: pointer;
+  border: 1px solid var(--t-borde); border-radius: var(--radius-sm);
+  background: transparent; color: var(--t-texto); font: 600 13px var(--font-ui);
+}
+.hints-close:hover { border-color: var(--t-acento); color: var(--t-acento); }
+.hints-close:focus-visible { outline: 2px solid var(--t-acento); outline-offset: 2px; }
+.dock-panels { z-index: 1; }

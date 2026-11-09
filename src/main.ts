@@ -2,6 +2,7 @@ import './style.css';
 import './ui/theme.css';
 import './ui/shell/shell.css';
 import './ui/panels/exportar.css';
+import './ui/hints/hints.css';
 import { createShell } from './ui/shell/shell';
 import { applyStoredTheme, writeTheme } from './ui/themeStore';
 import { createStore } from './store/store';

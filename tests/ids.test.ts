@@ -14,16 +14,6 @@ import { makeUiState } from './fixtures/uiState';
  * (se crean bajo demanda). Cada uno lleva el motivo; no ampliar para ocultar fallos.
  */
 const ON_DEMAND_IDS: Record<string, string> = {
-  // Ventana de aviso de actualización: showUpdateModal() la crea al cerrar la bienvenida.
-  updateClose: 'botón del modal de novedades, se crea al abrirlo',
-  updateDontShow: 'casilla del modal de novedades, se crea al abrirlo',
-  // Tutorial guiado: cada paso reconstruye su tarjeta al iniciarse (showTutorial).
-  tutPrev: 'botón de la tarjeta del tutorial, se crea al iniciar el tutorial',
-  tutNext: 'botón de la tarjeta del tutorial, se crea al iniciar el tutorial',
-  tutDontShow: 'casilla de la tarjeta del tutorial, se crea al iniciar el tutorial',
-  // Pregunta "¿quieres el tutorial?" que aparece después de cerrar la bienvenida.
-  tutPromptYes: 'botón del aviso del tutorial, se crea al mostrarlo',
-  tutPromptNo: 'botón del aviso del tutorial, se crea al mostrarlo',
   // Popover de color: showColorPopoverAt() lo crea al pulsar una muestra de color.
   sbColorPopover: 'popover de color, se crea al pulsar una muestra',
   // Asistente de recorte (src/ui/wizard.ts): su overlay solo existe mientras corre runWizard().

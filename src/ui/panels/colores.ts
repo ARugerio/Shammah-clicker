@@ -338,7 +338,7 @@ export function mountColorViewportTools(viewport: HTMLElement, cb: UiCallbacks):
       if (state.selectedParts.length === 0) {
         edgesTitle.textContent = 'Ajuste de Bordes';
         if (!edgesContent.querySelector('.edges-empty')) {
-          edgesContent.innerHTML = `<div class="edges-empty">Toca una zona del modelo 3D para redondear o biselar.<br/>Los filos generales de la Tapa y Base están en el panel izquierdo.</div>`;
+          edgesContent.innerHTML = `<div class="edges-empty">Toca una zona del modelo 3D para redondear o biselar.<br/>Los filos generales de la Tapa y Base están en el panel Colores.</div>`;
         }
         return;
       }

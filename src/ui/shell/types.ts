@@ -16,6 +16,8 @@ export interface Shell {
   statusEl: HTMLElement;
   topbarActionsEl: HTMLElement;
   viewerControlsEl: HTMLElement;
+  /** Barra de herramientas inferior (donde se anclan las pistas). */
+  dockEl: HTMLElement;
   legacyLeftEl: HTMLElement;
   legacyRightEl: HTMLElement;
   panelHost(id: PanelId): HTMLElement;
