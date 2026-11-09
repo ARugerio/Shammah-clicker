@@ -1,14 +1,15 @@
 import type { BaseShapeKind, EditMode, EdgeSetting, EdgeStyle, KeychainParams, PaletteEntry, SwitchPlacement, ViewMode, RGB } from '../types';
-import { FILAMENTS } from '../types';
 import type { SectionAxis } from '../viewer/viewer';
 import type { RgbaImage } from '../image/decode';
 import type { FontOption } from '../image/letter';
 import { FONT_OPTIONS, loadBundledFonts } from '../image/letter';
 import { LUCIDE_ICONS, buildSvg, svgDataUrl } from '../image/lucideIcons';
-import type { Shell } from './shell/types';
+import type { PanelHandle, Shell } from './shell/types';
 import { formaPanel } from './panels/forma';
 import { switchPanel } from './panels/switch';
-import { tip, bindValInput } from './shared/controls';
+import { coloresPanel, mountColorViewportTools } from './panels/colores';
+import { tip } from './shared/controls';
+import { hexRgb, showColorPopoverAt } from './shared/colorPopover';
 
 export interface UiState {
   status: string;
@@ -120,26 +121,6 @@ const POPULAR_LUCIDE = [
   'coffee', 'gamepad-2', 'trophy', 'crown',
 ];
 
-const rgbHex = (rgb: [number, number, number]) =>
-  '#' + rgb.map((v) => Math.max(0, Math.min(255, v)).toString(16).padStart(2, '0')).join('');
-
-const hexRgb = (hex: string): [number, number, number] => [
-  parseInt(hex.slice(1, 3), 16),
-  parseInt(hex.slice(3, 5), 16),
-  parseInt(hex.slice(5, 7), 16),
-];
-
-const friendlyTargetLabel = (t: string): string => {
-  if (t === 'capTop') return 'Tapa Superior';
-  if (t === 'baseTop') return 'Base Superior';
-  if (t === 'baseBottom') return 'Base Inferior';
-  if (t === 'base-body') return 'Cuerpo';
-  if (t === 'top-base') return 'Marco de Tapa';
-  const m = /^top-color-(\d+)-\d+$/.exec(t);
-  if (m) return `Color ${+m[1] + 1}`;
-  return t;
-};
-
 export function createUi(
   sidebarLeft: HTMLElement,
   sidebarRight: HTMLElement,
@@ -172,34 +153,6 @@ export function createUi(
     </div>
 
     <div id="geometrySettingsContainer">
-      <details class="section section-collapsible" id="sectionColors">
-        <summary class="label collapsible-head">1 · Colores y Suavizado</summary>
-        <div class="collapsible-body">
-        <div class="field" id="colorCountField">
-          <label for="ccount">Paleta AMS ${tip('Cantidad de colores o extrusores que utilizará tu AMS.')}</label>
-          <select id="ccount">
-            <option value="2">2 Colores</option>
-            <option value="3">3 Colores</option>
-            <option value="4">4 Colores</option>
-            <option value="5">5 Colores</option>
-            <option value="6">6 Colores</option>
-            <option value="7">7 Colores</option>
-            <option value="8">8 Colores</option>
-          </select>
-        </div>
-        <div class="prow-stacked" id="smoothingField">
-          <div class="prow-header">
-            <label for="smooth">Suavizado de Vector ${tip('Nivel de simplificación de bordes. Valores altos redondean puntas, bajos conservan detalles finos.')}</label>
-            <input type="text" class="val" id="smoothVal" />
-          </div>
-          <input type="range" id="smooth" min="0" max="1" step="0.05" />
-        </div>
-        <div class="palette" id="palette">
-          <div class="hint">Carga una imagen/vector para asignar colores.</div>
-        </div>
-        </div>
-      </details>
-
       <details class="section section-collapsible" id="sectionShape">
         <summary class="label collapsible-head">2 · Ajustes y Tolerancias P2S</summary>
         <div class="collapsible-body">
@@ -232,36 +185,6 @@ export function createUi(
                 <span class="tol-val" id="keychainSizeVal">5.2 mm</span>
                 <button class="btn" id="keychainSizePlus" type="button">+</button>
               </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="global-edges" id="globalEdges" style="display:none; margin-bottom: 16px;">
-          <span class="gedge-heading">Biselados (Edges) ${tip('Redondea (Fillet) o bisela a 45º (Chamfer) los bordes principales de la pieza.')}</span>
-          <div class="gedge-row">
-            <span class="gedge-name">Tapa (Keycap)</span>
-            <div class="edge-style-btns" data-edge="capTop">
-              <button class="edge-style-btn active" data-style="none" type="button">Nada</button>
-              <button class="edge-style-btn" data-style="fillet" type="button">Redondo</button>
-              <button class="edge-style-btn" data-style="chamfer" type="button">Bisel</button>
-            </div>
-            <div class="edge-size-btns gedge-size" data-edge="capTop" style="display:none;">
-              <button class="btn edge-size-minus" type="button">−</button>
-              <span class="edge-size-val"></span>
-              <button class="btn edge-size-plus" type="button">+</button>
-            </div>
-          </div>
-          <div class="gedge-row">
-            <span class="gedge-name">Base inferior</span>
-            <div class="edge-style-btns" data-edge="clickerBase">
-              <button class="edge-style-btn active" data-style="none" type="button">Nada</button>
-              <button class="edge-style-btn" data-style="fillet" type="button">Redondo</button>
-              <button class="edge-style-btn" data-style="chamfer" type="button">Bisel</button>
-            </div>
-            <div class="edge-size-btns gedge-size" data-edge="clickerBase" style="display:none;">
-              <button class="btn edge-size-minus" type="button">−</button>
-              <span class="edge-size-val"></span>
-              <button class="btn edge-size-plus" type="button">+</button>
             </div>
           </div>
         </div>
@@ -443,6 +366,17 @@ export function createUi(
     $('geometrySettingsContainer').appendChild(switchHost);
   }
   const switchH = switchPanel.mount(switchHost, cb);
+
+  // Panel Colores (colores, suavizado, paleta y biselados de tapa y base). Sin `shell`
+  // ocupa el inicio de la zona de geometría, donde estaba "1 · Colores y Suavizado".
+  let coloresHost: HTMLElement;
+  if (shell) coloresHost = shell.panelHost('colores');
+  else {
+    coloresHost = document.createElement('div');
+    const geo = $('geometrySettingsContainer');
+    geo.insertBefore(coloresHost, geo.firstChild);
+  }
+  const colores = coloresPanel.mount(coloresHost, cb);
 
   $('undoBtn')?.addEventListener('click', () => cb.onUndo());
   $('redoBtn')?.addEventListener('click', () => cb.onRedo());
@@ -642,6 +576,7 @@ export function createUi(
   $('generateText').addEventListener('click', () => cb.onGenerate());
 
   const viewport = $('viewport');
+  let viewportTools: PanelHandle | null = null;
   if (viewport) {
     let overlay = $('loadingOverlay');
     if (!overlay) {
@@ -653,91 +588,8 @@ export function createUi(
       viewport.appendChild(overlay);
     }
 
-    const modeBar = document.createElement('div');
-    modeBar.id = 'editModeBar';
-    modeBar.className = 'edit-mode-bar';
-    modeBar.innerHTML = `
-      <button class="edit-mode-btn active" data-editmode="color" type="button">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
-        Pintar Color
-      </button>
-      <button class="edit-mode-btn" data-editmode="extrude" type="button">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
-        Extruir (Altura)
-      </button>
-      <button class="edit-mode-btn" data-editmode="edges" type="button" style="display:none;">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4" ry="4"/></svg>
-        Biselado
-      </button>
-    `;
-    viewport.appendChild(modeBar);
-    modeBar.addEventListener('click', (e) => {
-      const btn = (e.target as HTMLElement).closest('[data-editmode]') as HTMLElement | null;
-      if (btn) cb.onEditMode(btn.dataset.editmode as EditMode);
-    });
-
-    const lettersToggle = document.createElement('div');
-    lettersToggle.id = 'lettersToggle';
-    lettersToggle.className = 'letters-toggle';
-    lettersToggle.setAttribute('hidden', '');
-    lettersToggle.innerHTML = `
-      <span>Separar Letras Individuales</span>
-      <label class="toggle"><input type="checkbox" id="separateLetters" /><span class="slider"></span></label>
-    `;
-    viewport.appendChild(lettersToggle);
-    const separateEl = lettersToggle.querySelector('#separateLetters') as HTMLInputElement | null;
-    separateEl?.addEventListener('change', () => cb.onSeparateLetters(separateEl.checked));
-
-    const extrudePanel = document.createElement('div');
-    extrudePanel.id = 'extrudePanel';
-    extrudePanel.className = 'edges-panel';
-    extrudePanel.setAttribute('hidden', '');
-    extrudePanel.innerHTML = `
-      <div class="edges-title">Extruir Segmento</div>
-      <div id="extrudeLevelLabel" style="text-align:center; margin-top:8px; font-size:13px; color:var(--muted);">Nivel: 0</div>
-      <div style="display:flex; gap:8px; margin-top:8px;">
-        <button type="button" class="btn" id="extrudeMinus" style="flex:1; font-size:18px;">-</button>
-        <button type="button" class="btn" id="extrudePlus" style="flex:1; font-size:18px;">+</button>
-      </div>
-      <div class="extrude-chamfer-row">
-        <span>Biselar bordes levantados</span>
-        <label class="toggle"><input type="checkbox" id="extrudeChamfer" /><span class="slider"></span></label>
-      </div>
-      <div class="panel-hint">Sube o baja el relieve del color seleccionado. Shift-Clic para elegir múltiples áreas.</div>
-    `;
-    viewport.appendChild(extrudePanel);
-    extrudePanel.querySelector('#extrudeMinus')?.addEventListener('click', () => cb.onExtrudeStep(-1));
-    extrudePanel.querySelector('#extrudePlus')?.addEventListener('click', () => cb.onExtrudeStep(1));
-    const chamferEl = extrudePanel.querySelector('#extrudeChamfer') as HTMLInputElement | null;
-    chamferEl?.addEventListener('change', () => cb.onExtrudeChamfer(chamferEl.checked));
-
-    const edgesPanel = document.createElement('div');
-    edgesPanel.id = 'edgesPanel';
-    edgesPanel.className = 'edges-panel';
-    edgesPanel.setAttribute('hidden', '');
-    edgesPanel.innerHTML = `
-      <div class="edges-title" id="edgesTitle">Ajuste de Bordes</div>
-      <div id="edgesContent"></div>
-      <div class="panel-hint">Selecciona una zona para redondear o biselar su borde superior. Shift-Clic para múltiples.</div>
-    `;
-    viewport.appendChild(edgesPanel);
-    edgesPanel.addEventListener('click', (e) => {
-      const targetEl = e.target as HTMLElement;
-      const styleBtn = targetEl.closest('.edge-style-btn') as HTMLElement | null;
-      if (styleBtn) {
-        const btnsRow = styleBtn.closest('.edge-style-btns') as HTMLElement;
-        btnsRow.querySelectorAll('.edge-style-btn').forEach(b => b.classList.remove('active'));
-        styleBtn.classList.add('active');
-        const target = btnsRow.dataset.edge;
-        if (target) cb.onEdgeStyle(target, styleBtn.dataset.style as EdgeSetting['style']);
-      }
-      if (targetEl.classList.contains('edge-size-minus') || targetEl.classList.contains('edge-size-plus')) {
-        const sizeRow = targetEl.closest('.edge-size-btns') as HTMLElement;
-        const target = sizeRow.dataset.edge;
-        const delta = targetEl.classList.contains('edge-size-minus') ? -0.2 : 0.2;
-        if (target) cb.onEdgeStep(target, delta);
-      }
-    });
+    // Relieve y bisel: flotan sobre el visor porque reaccionan a las piezas elegidas en 3D.
+    viewportTools = mountColorViewportTools(viewport, cb);
   }
 
   const importTabs = $('importTabs');
@@ -745,11 +597,6 @@ export function createUi(
     const t = (e.target as HTMLElement).closest('[data-mode]') as HTMLElement | null;
     if (t) cb.onImportMode(t.dataset.mode as any);
   });
-
-  const ccount = $<HTMLSelectElement>('ccount');
-  ccount.addEventListener('change', () => cb.onColorCount(+ccount.value));
-  const smooth = $<HTMLInputElement>('smooth');
-  smooth.addEventListener('input', () => cb.onSmoothing(+smooth.value));
 
   const keychain = $<HTMLInputElement>('keychain');
   keychain.addEventListener('change', () => cb.onKeychainToggle(keychain.checked));
@@ -759,27 +606,6 @@ export function createUi(
   $('keychainOffsetPlus').addEventListener('click', () => cb.onKeychainOffset(1.0));
   $('keychainSizeMinus').addEventListener('click', () => cb.onKeychainSize(-0.4));
   $('keychainSizePlus').addEventListener('click', () => cb.onKeychainSize(0.4));
-
-  const globalEdges = $('globalEdges');
-  globalEdges.addEventListener('click', (e) => {
-    const el = e.target as HTMLElement;
-    const styleBtn = el.closest('.edge-style-btn') as HTMLElement | null;
-    if (styleBtn) {
-      const btnsRow = styleBtn.closest('.edge-style-btns') as HTMLElement;
-      const target = btnsRow.dataset.edge;
-      if (target) cb.onEdgeStyle(target, styleBtn.dataset.style as EdgeStyle);
-      return;
-    }
-    const minus = el.closest('.edge-size-minus');
-    const plus = el.closest('.edge-size-plus');
-    if (minus || plus) {
-      const sizeRow = el.closest('.edge-size-btns') as HTMLElement;
-      const target = sizeRow.dataset.edge;
-      if (target) cb.onEdgeStep(target, minus ? -0.2 : 0.2);
-    }
-  });
-
-  bindValInput('smoothVal', smooth, cb.onSmoothing, (v) => v / 100);
 
   const viewTabs = $('viewTabs');
   viewTabs.addEventListener('click', (e) => {
@@ -1147,160 +973,12 @@ export function createUi(
   showWelcome();
   $('helpToggle').addEventListener('click', showTutorialPrompt);
 
-  function getFilamentNameAndHex(rgb: RGB): [string, string] {
-    let bestHex = rgbHex(rgb);
-    let bestName = 'Color Personalizado';
-    let bestD = Infinity;
-    for (const [name, hex] of FILAMENTS) {
-      const [fr, fg, fb] = hexRgb(hex);
-      const dr = rgb[0] - fr;
-      const dg = rgb[1] - fg;
-      const db = rgb[2] - fb;
-      const d = dr * dr + dg * dg + db * db;
-      if (d < bestD) {
-        bestD = d;
-        bestHex = hex;
-        bestName = name;
-      }
-    }
-    return [bestName, bestHex];
-  }
-
-  function showColorPopoverAt(clientX: number, clientY: number, currentHex: string, options: RGB[], handlers: { onSelect: (hex: string) => void; onClose?: () => void }) {
-    document.getElementById('sbColorPopover')?.remove();
-    const popover = document.createElement('div');
-    popover.id = 'sbColorPopover';
-    popover.className = 'color-popover';
-    document.body.appendChild(popover);
-
-    let done = false;
-    const close = () => {
-      if (done) return;
-      done = true;
-      popover.remove();
-      document.removeEventListener('mousedown', dismiss);
-      handlers.onClose?.();
-    };
-
-    options.forEach((rgb) => {
-      const hex = rgbHex(rgb);
-      const [name] = getFilamentNameAndHex(rgb);
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.style.background = hex;
-      btn.title = name;
-      if (hex.toLowerCase() === currentHex.toLowerCase()) btn.classList.add('active');
-      btn.addEventListener('click', () => { handlers.onSelect(hex); close(); });
-      popover.appendChild(btn);
-    });
-
-    const custom = document.createElement('label');
-    custom.className = 'cp-custom';
-    custom.title = 'Color personalizado (Hex)';
-    const inp = document.createElement('input');
-    inp.type = 'color';
-    inp.value = /^#[0-9a-f]{6}$/i.test(currentHex) ? currentHex : '#888888';
-    inp.addEventListener('input', () => handlers.onSelect(inp.value));
-    custom.appendChild(inp);
-    popover.appendChild(custom);
-
-    const w = popover.offsetWidth || 170;
-    const h = popover.offsetHeight || 180;
-    popover.style.left = `${Math.max(8, Math.min(clientX, window.innerWidth - w - 8))}px`;
-    popover.style.top = `${Math.max(8, Math.min(clientY, window.innerHeight - h - 8))}px`;
-
-    const dismiss = (e: MouseEvent) => { if (!popover.contains(e.target as Node)) close(); };
-    setTimeout(() => document.addEventListener('mousedown', dismiss), 50);
-  }
-
-  function showSidebarColorPicker(triggerEl: HTMLElement, currentHex: string, options: [string, string][], onSelect: (hex: string) => void) {
-    const rect = triggerEl.getBoundingClientRect();
-    showColorPopoverAt(rect.left, rect.bottom + 6, currentHex, options.map(([, hex]) => hexRgb(hex)), { onSelect });
-  }
-
-  function renderPalette(palette: PaletteEntry[], bodyColorRgb: RGB, colorMode?: 'normal' | 'limited', limitedColors?: RGB[]) {
-    const pal = $('palette');
-    pal.innerHTML = '';
-    const chipsToRender: [string, string][] = [];
-    if (colorMode === 'limited' && limitedColors && limitedColors.length > 0) {
-      limitedColors.forEach((rgb) => chipsToRender.push(getFilamentNameAndHex(rgb)));
-    } else {
-      FILAMENTS.forEach(([name, hex]) => chipsToRender.push([name, hex]));
-    }
-
-    const bodyRow = document.createElement('div');
-    bodyRow.className = 'fil-row body-row';
-    bodyRow.innerHTML = `
-      <span class="slot-no slot-body">Cuerpo</span>
-      <span class="swatch" style="background:#787c82; opacity: 0.5;" title="Color base original"></span>
-      <span class="arrow">→</span>
-      <button type="button" class="fil-chip" title="Color estructural de la pieza" style="background:${rgbHex(bodyColorRgb)}"></button>
-    `;
-
-    const bodyChip = bodyRow.querySelector('.fil-chip')!;
-    bodyChip.addEventListener('click', (e) => {
-      e.stopPropagation();
-      showSidebarColorPicker(bodyChip as HTMLElement, rgbHex(bodyColorRgb), chipsToRender, (hex) => cb.onBodyColor(hex));
-    });
-    pal.appendChild(bodyRow);
-
-    if (palette.length === 0) {
-      const hint = document.createElement('div');
-      hint.className = 'hint';
-      hint.textContent = 'Carga imagen/vector para habilitar AMS.';
-      pal.appendChild(hint);
-    } else {
-      palette.forEach((entry, i) => {
-        const row = document.createElement('div');
-        row.className = 'fil-row';
-        row.innerHTML = `
-          <span class="slot-no">E${i + 1}</span>
-          <span class="swatch" style="background:${rgbHex(entry.quantRgb)}" title="Color original detectado"></span>
-          <span class="arrow">→</span>
-          <button type="button" class="fil-chip" title="Filamento" style="background:${rgbHex(entry.filamentRgb)}"></button>`;
-
-        const chip = row.querySelector('.fil-chip')!;
-        chip.addEventListener('click', (e) => {
-          e.stopPropagation();
-          showSidebarColorPicker(chip as HTMLElement, rgbHex(entry.filamentRgb), chipsToRender, (hex) => cb.onFilament(i, hex));
-        });
-        pal.appendChild(row);
-      });
-
-      const tip = document.createElement('div');
-      tip.className = 'hint model-recolor-tip';
-      tip.textContent = 'Aviso: Haz clic directo en el 3D para repintar sectores manuales.';
-      pal.appendChild(tip);
-    }
-  }
-
   function update(state: UiState) {
     statusEl.innerHTML = (state.building ? '<span class="spinner"></span> ' : '') + state.status;
-    if (state.colorMode === 'limited') {
-      ccount.disabled = true;
-      let existingOpt = ccount.querySelector(`option[value="${state.colorCount}"]`);
-      if (!existingOpt) {
-        const opt = document.createElement('option');
-        opt.value = String(state.colorCount);
-        opt.textContent = `${state.colorCount} Colores (Limitado)`;
-        ccount.appendChild(opt);
-      }
-      ccount.value = String(state.colorCount);
-    } else {
-      ccount.disabled = false;
-      ccount.querySelectorAll('option').forEach(opt => { if (opt.textContent?.includes('Limitado')) opt.remove(); });
-      ccount.value = String(state.colorCount);
-    }
-
-    const setVal = (id: string, text: string) => {
-      const el = $<HTMLInputElement>(id);
-      if (document.activeElement !== el) el.value = text;
-    };
-    smooth.value = String(state.smoothing);
-    setVal('smoothVal', Math.round(state.smoothing * 100) + '%');
     forma.update(state);
-
     switchH.update(state);
+    colores.update(state);
+    viewportTools?.update(state);
 
     const kc = state.keychain;
     keychain.checked = kc.enabled;
@@ -1323,12 +1001,6 @@ export function createUi(
     $('iconPanel').hidden = state.importMode !== 'icon';
     $('letterPanel').hidden = state.importMode !== 'text';
 
-    const showSmoothingAndBg = state.importMode === 'image';
-    const ccountField = $('colorCountField');
-    const smoothingField = $('smoothingField');
-    if (ccountField) ccountField.style.display = showSmoothingAndBg ? 'grid' : 'none';
-    if (smoothingField) smoothingField.style.display = showSmoothingAndBg ? 'grid' : 'none';
-
     for (const b of viewTabs.querySelectorAll<HTMLElement>('button')) b.classList.toggle('active', b.dataset.view === state.view);
     const exportBtn = $<HTMLButtonElement>('export');
     exportBtn.disabled = !state.hasParts || state.building;
@@ -1344,15 +1016,8 @@ export function createUi(
       }
     }
 
-    renderPalette(state.palette, state.bodyColorRgb, state.colorMode, state.limitedColors);
-
     if (state.currentIconName) {
       galleryEl.querySelectorAll('.icon').forEach((n) => n.classList.toggle('active', n.getAttribute('title') === state.currentIconName));
-    }
-
-    const modeBarEl = document.getElementById('editModeBar');
-    if (modeBarEl) {
-      for (const b of modeBarEl.querySelectorAll<HTMLElement>('[data-editmode]')) b.classList.toggle('active', b.dataset.editmode === state.editMode);
     }
 
     const undoBtn = document.getElementById('undoBtn') as HTMLButtonElement | null;
@@ -1364,109 +1029,6 @@ export function createUi(
 
     const extrudeTooltipEl = document.getElementById('extrudeTooltip');
     if (extrudeTooltipEl) extrudeTooltipEl.classList.toggle('hidden', state.editMode !== 'extrude');
-
-    const modeBarBtns = document.querySelectorAll('.edit-mode-btn');
-    modeBarBtns.forEach(b => b.classList.toggle('active', (b as HTMLElement).dataset.editmode === state.editMode));
-
-    const lettersToggleEl = document.getElementById('lettersToggle');
-    if (lettersToggleEl) {
-      const showLetters = state.importMode === 'text' && (state.editMode === 'color' || state.editMode === 'extrude');
-      lettersToggleEl.toggleAttribute('hidden', !showLetters);
-      const sepInput = lettersToggleEl.querySelector('#separateLetters') as HTMLInputElement | null;
-      if (sepInput) sepInput.checked = state.separateLetters;
-    }
-
-    const extrudePanelEl = document.getElementById('extrudePanel');
-    if (extrudePanelEl) {
-      if (state.editMode === 'extrude') {
-        extrudePanelEl.removeAttribute('hidden');
-        const plusBtn = extrudePanelEl.querySelector('#extrudePlus') as HTMLButtonElement;
-        const minusBtn = extrudePanelEl.querySelector('#extrudeMinus') as HTMLButtonElement;
-        const labelEl = extrudePanelEl.querySelector('#extrudeLevelLabel');
-        const chamferToggle = extrudePanelEl.querySelector('#extrudeChamfer') as HTMLInputElement | null;
-        if (chamferToggle) { chamferToggle.disabled = false; chamferToggle.checked = state.extrudeChamfer; }
-        if (state.selectedParts.length === 0) {
-          if (plusBtn) plusBtn.disabled = true;
-          if (minusBtn) minusBtn.disabled = true;
-          if (labelEl) labelEl.textContent = 'Seleccione una capa';
-        } else {
-          if (plusBtn) plusBtn.disabled = false;
-          if (minusBtn) minusBtn.disabled = false;
-          if (labelEl) {
-            const firstPart = state.selectedParts[0];
-            const level = state.componentHeights[firstPart] ?? 0;
-            const n = state.selectedParts.length;
-            labelEl.textContent = n > 1 ? `${n} zonas · Relieve: ${level.toFixed(1)}` : `Relieve: ${level.toFixed(1)}`;
-          }
-        }
-      } else {
-        extrudePanelEl.setAttribute('hidden', '');
-      }
-    }
-
-    const globalEdgesEl = document.getElementById('globalEdges');
-    if (globalEdgesEl) {
-      for (const target of ['capTop', 'clickerBase']) {
-        const es = state.edgeSettings.find(s => s.target === target) || { target, style: 'none' as EdgeStyle, radius: 0 };
-        const btnsRow = globalEdgesEl.querySelector(`.edge-style-btns[data-edge="${target}"]`) as HTMLElement | null;
-        const sizeRow = globalEdgesEl.querySelector(`.edge-size-btns[data-edge="${target}"]`) as HTMLElement | null;
-        if (btnsRow) btnsRow.querySelectorAll('.edge-style-btn').forEach(b => b.classList.toggle('active', (b as HTMLElement).dataset.style === es.style));
-        if (sizeRow) {
-          const valEl = sizeRow.querySelector('.edge-size-val') as HTMLElement | null;
-          if (es.style === 'none') { sizeRow.style.display = 'none'; } 
-          else { sizeRow.style.display = 'flex'; if (valEl) valEl.textContent = `${(es.radius ?? 1).toFixed(1)} mm`; }
-        }
-      }
-    }
-
-    const edgesPanelEl = document.getElementById('edgesPanel');
-    const edgesContentEl = document.getElementById('edgesContent');
-    const edgesTitleEl = document.getElementById('edgesTitle');
-    if (edgesPanelEl && edgesContentEl && edgesTitleEl) {
-      if (state.editMode === 'edges') {
-        edgesPanelEl.removeAttribute('hidden');
-        if (state.selectedParts.length === 0) {
-          edgesTitleEl.textContent = 'Ajuste de Bordes';
-          if (!edgesContentEl.querySelector('.edges-empty')) {
-            edgesContentEl.innerHTML = `<div class="edges-empty">Toca una zona del modelo 3D para redondear o biselar.<br/>Los filos generales de la Tapa y Base están en el panel izquierdo.</div>`;
-          }
-        } else {
-          const targets = state.selectedParts;
-          edgesTitleEl.textContent = 'Bordes de la Pieza';
-          const currentTargets = Array.from(edgesContentEl.querySelectorAll('.edge-style-btns')).map(r => (r as HTMLElement).dataset.edge);
-          if (targets.join(',') !== currentTargets.join(',')) {
-            edgesContentEl.innerHTML = targets.map(t => {
-              const label = friendlyTargetLabel(t);
-              return `
-                <div class="edge-label" title="${t}" style="margin-bottom: 4px;">${label} <span class="edge-radius-label" style="color:var(--muted);"></span></div>
-                <div class="edge-style-btns" data-edge="${t}" style="margin-bottom: 8px;">
-                  <button class="edge-style-btn active" data-style="none" type="button">Nada</button>
-                  <button class="edge-style-btn" data-style="fillet" type="button">Redondo</button>
-                  <button class="edge-style-btn" data-style="chamfer" type="button">Bisel</button>
-                </div>
-                <div class="edge-size-btns" data-edge="${t}" style="gap:8px; margin-bottom: 12px; display: none;">
-                  <button class="btn edge-size-minus" type="button" style="flex:1;">-</button>
-                  <button class="btn edge-size-plus" type="button" style="flex:1;">+</button>
-                </div>
-              `;
-            }).join('');
-          }
-          for (const target of targets) {
-            const es = state.edgeSettings.find(s => s.target === target) || { target, style: 'none' as EdgeStyle, radius: 1.0 };
-            const btnsRow = edgesContentEl.querySelector(`.edge-style-btns[data-edge="${target}"]`) as HTMLElement;
-            const sizeRow = edgesContentEl.querySelector(`.edge-size-btns[data-edge="${target}"]`) as HTMLElement;
-            const labelRow = edgesContentEl.querySelector(`.edge-label[title="${target}"] .edge-radius-label`) as HTMLElement;
-            if (btnsRow) btnsRow.querySelectorAll('.edge-style-btn').forEach(b => b.classList.toggle('active', (b as HTMLElement).dataset.style === es.style));
-            if (sizeRow && labelRow) {
-              if (es.style === 'none') { sizeRow.style.display = 'none'; labelRow.textContent = ''; } 
-              else { sizeRow.style.display = 'flex'; const safeRadius = es.radius !== undefined ? es.radius : 1.0; labelRow.textContent = `(${safeRadius.toFixed(1)} mm)`; }
-            }
-          }
-        }
-      } else {
-        edgesPanelEl.setAttribute('hidden', '');
-      }
-    }
   }
 
   return { 
