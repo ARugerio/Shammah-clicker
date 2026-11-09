@@ -15,6 +15,7 @@ import { downloadThreeMF } from './export/threemfExport';
 import { parseSvg } from './image/logo';
 import { SAMPLES, SVG_SAMPLES, describeLoadError } from './image/sample';
 import { parseLetter, importFontFile } from './image/letter';
+import { msgSvgSelected, msgIconSelected, msgTextChanged, msgFontChanged, msgFontImported } from './ui/statusMessages';
 import { LUCIDE_ICONS, buildSvg } from './image/lucideIcons';
 import type {
   BuildParams,
@@ -315,20 +316,20 @@ const ui = createUi(statusEl, {
   onSelectSvg: (svgText, name) => {
     currentSvgText = svgText;
     currentSvgName = name;
-    store.set({ status: `SVG seleccionado: ${name}. Haz clic en Generar para actualizar.` });
+    store.set({ status: msgSvgSelected(name) });
   },
   onSelectIcon: (svgText, name) => {
     currentIconText = svgText;
     currentIconName = name;
-    store.set({ currentIconName: name, status: `Icono seleccionado: ${name}. Haz clic en Generar para actualizar.` });
+    store.set({ currentIconName: name, status: msgIconSelected(name) });
   },
   onTextChange: (text) => {
     currentText = text;
-    store.set({ status: 'Texto actualizado. Haz clic en Generar para actualizar.' });
+    store.set({ status: msgTextChanged() });
   },
   onFontSelect: (fontId) => {
     currentFontId = fontId;
-    store.set({ status: 'Fuente cambiada. Haz clic en Generar para actualizar.' });
+    store.set({ status: msgFontChanged() });
   },
   onImportFont: async (file) => {
     try {
@@ -336,7 +337,7 @@ const ui = createUi(statusEl, {
       const font = await importFontFile(file);
       ui.addFontOption(font);
       currentFontId = font.id;
-      store.set({ building: false, status: `¡Fuente ${font.name} importada! Haz clic en Generar para actualizar.` });
+      store.set({ building: false, status: msgFontImported(font.name) });
     } catch (err) {
       store.set({ building: false, status: 'No se pudo importar fuente: ' + String(err) });
     }

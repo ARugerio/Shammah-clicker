@@ -145,9 +145,51 @@ describe('disenoPanel', () => {
     expect(host.querySelector('#importTabs .active')!.getAttribute('data-mode')).toBe('image');
   });
 
-  it('los botones Generar llaman onGenerate', () => {
-    for (const id of ['generateSvg', 'generateText']) $(id).click();
-    expect(calls.onGenerate).toHaveLength(2);
+  describe('botón "Generar geometría" (pie fijo del panel)', () => {
+    const footer = () => host.querySelector<HTMLElement>('.generate-footer')!;
+    const visibleButtons = () =>
+      [...footer().querySelectorAll<HTMLButtonElement>('button')].filter((b) => !b.hidden);
+
+    it('en modo SVG hay un único botón visible, en el pie, que llama onGenerate una vez', () => {
+      handle.update(makeUiState({ importMode: 'svg' }));
+      expect(footer().hidden).toBe(false);
+      const btns = visibleButtons();
+      expect(btns).toHaveLength(1);
+      expect(btns[0].id).toBe('generateSvg');
+      expect(btns[0].textContent!.trim()).toBe('Generar geometría');
+      expect(btns[0].classList.contains('primary')).toBe(true);
+      // El pie es el último hijo del panel, fuera de los sub-paneles que se desplazan.
+      expect(host.lastElementChild).toBe(footer());
+      expect(footer().closest('.mode-panel')).toBeNull();
+      btns[0].click();
+      expect(calls.onGenerate).toHaveLength(1);
+    });
+
+    it('en modo Texto el botón visible es generateText y llama onGenerate una vez', () => {
+      handle.update(makeUiState({ importMode: 'text' }));
+      expect(footer().hidden).toBe(false);
+      const btns = visibleButtons();
+      expect(btns.map((b) => b.id)).toEqual(['generateText']);
+      expect(btns[0].textContent!.trim()).toBe('Generar geometría');
+      btns[0].click();
+      expect(calls.onGenerate).toHaveLength(1);
+    });
+
+    it('en modo Imagen (y en un proyecto antiguo con icono) el pie está oculto', () => {
+      handle.update(makeUiState({ importMode: 'image' }));
+      expect(footer().hidden).toBe(true);
+      handle.update(makeUiState({ importMode: 'icon' }));
+      expect(footer().hidden).toBe(true);
+    });
+
+    it('cambiar de modo alterna el botón sin duplicar IDs', () => {
+      handle.update(makeUiState({ importMode: 'svg' }));
+      handle.update(makeUiState({ importMode: 'text' }));
+      handle.update(makeUiState({ importMode: 'svg' }));
+      expect(visibleButtons().map((b) => b.id)).toEqual(['generateSvg']);
+      expect(host.querySelectorAll('#generateSvg')).toHaveLength(1);
+      expect(host.querySelectorAll('#generateText')).toHaveLength(1);
+    });
   });
 });
 

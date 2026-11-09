@@ -84,7 +84,6 @@ const TEMPLATE = `
           <label class="toggle"><input id="removebgSvg" type="checkbox" /><span class="slider"></span></label>
         </div>
       </div>
-      <button class="primary" id="generateSvg" style="margin-top: 10px; width: 100%;">Generar Geometría</button>
     </div>
 
     <div id="letterPanel" class="mode-panel" hidden>
@@ -100,8 +99,12 @@ const TEMPLATE = `
           <input id="fontUpload" type="file" accept=".ttf,.otf,.json,font/ttf,font/otf,application/json" />
         </label>
       </div>
-      <button class="primary" id="generateText" style="margin-top: 10px; width: 100%;">Generar Geometría</button>
     </div>
+  </div>
+
+  <div class="generate-footer" hidden>
+    <button class="primary" id="generateSvg" type="button" hidden>Generar geometría</button>
+    <button class="primary" id="generateText" type="button" hidden>Generar geometría</button>
   </div>
 `;
 
@@ -244,6 +247,10 @@ export const disenoPanel = {
 
     $('generateText').addEventListener('click', () => cb.onGenerate());
 
+    const footer = host.querySelector<HTMLElement>('.generate-footer')!;
+    const generateSvg = $('generateSvg');
+    const generateText = $('generateText');
+
     const subPanels: Record<PanelMode, HTMLElement> = {
       image: $('imagePanel'),
       svg: $('svgPanel'),
@@ -260,6 +267,10 @@ export const disenoPanel = {
         const shown: PanelMode = state.importMode === 'icon' ? 'image' : state.importMode;
         for (const b of importTabs.querySelectorAll<HTMLElement>('[data-mode]')) b.classList.toggle('active', b.dataset.mode === shown);
         for (const mode of Object.keys(subPanels) as PanelMode[]) subPanels[mode].hidden = mode !== shown;
+        // Pie fijo: un solo botón "Generar geometría" visible por modo; Imagen usa el diálogo de preprocesamiento.
+        footer.hidden = shown === 'image';
+        generateSvg.hidden = shown !== 'svg';
+        generateText.hidden = shown !== 'text';
       },
       addUploadedSvg,
       addFontOption(font: FontOption) {
