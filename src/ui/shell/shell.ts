@@ -75,7 +75,9 @@ export function createShell(root: HTMLElement): Shell {
   }
 
   let current: PanelId | null = null;
+  const ac = new AbortController();
   const openPanel = (id: PanelId | null) => {
+    if (id !== null && !hosts.has(id)) return;
     current = id;
     for (const p of PANELS) {
       const open = p.id === id;
@@ -86,9 +88,13 @@ export function createShell(root: HTMLElement): Shell {
   for (const p of PANELS) {
     btns.get(p.id)!.addEventListener('click', () => openPanel(current === p.id ? null : p.id));
   }
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && current !== null) openPanel(null);
-  });
+  document.addEventListener(
+    'keydown',
+    (e) => {
+      if (e.key === 'Escape' && current !== null) openPanel(null);
+    },
+    { signal: ac.signal },
+  );
 
   // Drawers provisionales (barras viejas): abiertos por defecto solo en pantallas anchas.
   const wide = typeof window.innerWidth === 'number' && window.innerWidth >= 1000;
@@ -112,5 +118,6 @@ export function createShell(root: HTMLElement): Shell {
     panelHost: (id) => hosts.get(id)!,
     openPanel,
     openPanelId: () => current,
+    dispose: () => ac.abort(),
   };
 }

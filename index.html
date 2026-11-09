@@ -10,9 +10,8 @@
     
     <script>
       (function() {
-        const saved = localStorage.getItem('clicker-theme');
-        const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        const theme = saved || (systemDark ? 'dark' : 'light');
+        var theme = 'light';
+        try { if (localStorage.getItem('clicker-theme') === 'dark') theme = 'dark'; } catch (e) {}
         document.documentElement.setAttribute('data-theme', theme);
       })();
     </script>

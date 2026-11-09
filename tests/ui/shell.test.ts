@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import '../helpers/setupDom';
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { createShell } from '../../src/ui/shell/shell';
 import type { PanelId, Shell } from '../../src/ui/shell/types';
 
@@ -19,6 +19,8 @@ beforeEach(() => {
   document.body.appendChild(root);
   shell = createShell(root);
 });
+
+afterEach(() => shell.dispose());
 
 describe('createShell', () => {
   it('crea seis botones de dock con etiqueta en español y aria-expanded=false', () => {
@@ -77,5 +79,22 @@ describe('createShell', () => {
     expect(shell.openPanelId()).toBeNull();
     btns[2].click();
     expect(shell.openPanelId()).toBe('colores');
+  });
+
+  it('ignora ids de panel desconocidos', () => {
+    shell.openPanel('forma');
+    shell.openPanel('nope' as PanelId);
+    expect(shell.openPanelId()).toBe('forma');
+  });
+
+  it('tras dispose(), Escape ya no actúa en esa instancia', () => {
+    const second = createShell(document.body.appendChild(document.createElement('div')));
+    shell.dispose();
+    shell.openPanel('forma');
+    second.openPanel('colores');
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    expect(second.openPanelId()).toBeNull();
+    expect(shell.openPanelId()).toBe('forma');
+    second.dispose();
   });
 });

@@ -2,6 +2,7 @@ import './style.css';
 import './ui/theme.css';
 import './ui/shell/shell.css';
 import { createShell } from './ui/shell/shell';
+import { applyStoredTheme, writeTheme } from './ui/themeStore';
 import { createStore } from './store/store';
 import { createViewer } from './viewer/viewer';
 import { createUi, type UiState } from './ui/ui';
@@ -124,13 +125,8 @@ const statusEl = shell.statusEl;
 const viewer = createViewer(document.getElementById('app')!);
 
 // ---- Apply initial theme (system pref or saved preference) ----
-(function applyInitialTheme() {
-  const saved = localStorage.getItem('clicker-theme');
-  const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  const theme = saved ?? (systemDark ? 'dark' : 'light');
-  document.documentElement.setAttribute('data-theme', theme);
-  viewer.setTheme(theme);
-})();
+viewer.setTheme(applyStoredTheme());
+
 
 const ui = createUi(sidebarLeft, sidebarRight, statusEl, {
   onUpload: (file) => openWizard(() => loadFileToImage(file)),
@@ -348,7 +344,7 @@ const ui = createUi(sidebarLeft, sidebarRight, statusEl, {
   },
   onThemeChange: (theme) => {
     document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('clicker-theme', theme);
+    writeTheme(theme);
     viewer.setTheme(theme);
   },
   onGenerate: () => {

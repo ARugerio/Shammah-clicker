@@ -21,4 +21,6 @@ export interface Shell {
   panelHost(id: PanelId): HTMLElement;
   openPanel(id: PanelId | null): void;
   openPanelId(): PanelId | null;
+  /** Quita los manejadores a nivel de documento. */
+  dispose(): void;
 }

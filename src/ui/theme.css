@@ -11,7 +11,7 @@
   --space-4: 32px;
 }
 
-:root[data-theme="light"] {
+:root, :root[data-theme="light"] {
   color-scheme: light;
   --t-fondo: #f6f1ea;
   --t-superficie: #ffffff;
@@ -23,7 +23,7 @@
   --t-sombra: 0 8px 24px rgba(31, 27, 22, 0.12);
 }
 
-:root[data-theme="dark"], :root:not([data-theme="light"]) {
+:root[data-theme="dark"] {
   color-scheme: dark;
   --t-fondo: #1c1814;
   --t-superficie: #26211b;
@@ -36,9 +36,9 @@
 }
 
 /* Los tokens viejos (style.css) se reasignan a los nuevos hasta que la Tarea 11 los limpie. */
+:root,
 :root[data-theme="light"],
-:root[data-theme="dark"],
-:root:not([data-theme="light"]) {
+:root[data-theme="dark"] {
   --font-display: var(--font-ui);
   --bg: var(--t-fondo);
   --panel: var(--t-superficie);
