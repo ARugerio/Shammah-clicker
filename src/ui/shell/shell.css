@@ -70,3 +70,9 @@
   #topbar { padding: var(--space-1); gap: var(--space-1); }
   .topbar-btn { padding: 8px 10px; }
 }
+
+/* Acciones de la barra superior (Task 8): botones de icono. */
+.topbar-action { padding: 8px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; color: var(--t-texto); }
+.topbar-action:disabled { opacity: 0.4; cursor: not-allowed; }
+.topbar-action svg { display: block; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }

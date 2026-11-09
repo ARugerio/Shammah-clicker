@@ -170,18 +170,19 @@ describe('createUi y el panel Diseño', () => {
     expect(dock.querySelector<HTMLElement>('#svgPanel')!.hidden).toBe(false);
     dock.querySelector<HTMLElement>('#importTabs [data-mode="text"]')!.click();
     expect(calls.onImportMode).toEqual([['text']]);
-    // El pie de exportación sigue en la barra derecha (Task 8).
-    expect(shell.legacyRightEl.querySelector('#export')).not.toBeNull();
+    // El botón de exportación ya vive en su propio panel del dock (Task 8).
+    expect(shell.legacyRightEl.querySelector('#export')).toBeNull();
+    expect(shell.panelHost('exportar').querySelector('#export')).not.toBeNull();
     shell.dispose();
   });
 
-  it('sin shell monta el panel en la barra derecha, antes del pie', () => {
+  it('sin shell monta el panel en la barra derecha, antes del panel Exportar', () => {
     const { shell } = mountUi(false);
     const tabs = shell.legacyRightEl.querySelector('#importTabs');
     expect(tabs).not.toBeNull();
     expect(shell.panelHost('diseno').querySelector('#importTabs')).toBeNull();
     expect(document.querySelectorAll('#importTabs').length).toBe(1);
-    const footer = shell.legacyRightEl.querySelector('.sidebar-sticky-footer')!;
+    const footer = shell.legacyRightEl.querySelector('#export')!;
     expect(tabs!.compareDocumentPosition(footer) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     shell.dispose();
   });

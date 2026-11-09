@@ -1,0 +1,12 @@
+/* Panel Exportar: resumen de colores, botón principal y crédito. */
+.export-panel { display: flex; flex-direction: column; gap: var(--space-2); }
+.export-summary { display: flex; flex-direction: column; gap: var(--space-1); }
+.export-summary-count { font-size: 13px; font-weight: 600; color: var(--t-texto); }
+.export-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.export-chip { width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--t-borde); }
+.export-btn {
+  width: 100%; font-size: 15px; font-weight: 700; border: none; border-radius: var(--radius-sm);
+  background-color: var(--t-acento, #db2777); color: #fff;
+}
+.export-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.export-panel .sidebar-credit { color: var(--t-apagado, #94a3b8); }

@@ -8,6 +8,8 @@ import { switchPanel } from './panels/switch';
 import { coloresPanel, mountColorViewportTools } from './panels/colores';
 import { disenoPanel } from './panels/diseno';
 import { llaveroPanel } from './panels/llavero';
+import { exportarPanel } from './panels/exportar';
+import { mountTopbarActions } from './shell/topbarActions';
 import { tip } from './shared/controls';
 import { hexRgb, showColorPopoverAt } from './shared/colorPopover';
 
@@ -135,52 +137,10 @@ export function createUi(
 
     <div id="geometrySettingsContainer"></div>
 
-    <div class="sidebar-sticky-footer">
-      <div class="btn-row" id="historyControls">
-        <button id="undoBtn" class="secondary" type="button" title="Deshacer (Ctrl+Z)" disabled style="display: flex; justify-content: center; align-items: center;">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>
-        </button>
-        <button id="refreshBtn" class="secondary" type="button" title="Revertir a Original" disabled style="display: flex; justify-content: center; align-items: center;">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
-        </button>
-        <button id="redoBtn" class="secondary" type="button" title="Rehacer (Ctrl+Shift+Z)" disabled style="display: flex; justify-content: center; align-items: center;">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 14 5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/></svg>
-        </button>
-      </div>
-    </div>
   `;
 
   // Barra Lateral Derecha
-  sidebarRight.innerHTML = `
-    <div class="sidebar-sticky-footer">
-      <button class="primary" id="export" style="width:100%; font-size:15px; background-color:#10b981; border:none; border-radius:6px; font-weight:700;">Descargar 3MF (Bambu Studio)</button>
-      <div id="projectSettingsContainer">
-        <div class="btn-row">
-          <button id="saveProj" class="secondary utility-btn" type="button" aria-label="Guardar proyecto">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-            <span>Guardar</span>
-          </button>
-          <button id="loadProj" class="secondary utility-btn" type="button" aria-label="Cargar proyecto">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            <span>Cargar</span>
-          </button>
-          <input type="file" id="projFile" accept="application/json" hidden />
-        </div>
-        <div class="btn-row footer-utility-row">
-          <button id="helpToggle" class="secondary utility-btn" type="button" aria-label="Mostrar ayuda">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-            <span>Ayuda</span>
-          </button>
-          <button id="themeToggle" class="secondary utility-btn" type="button" aria-label="Alternar tema">
-            <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
-            <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-            <span id="themeLabel">Modo oscuro</span>
-          </button>
-        </div>
-      </div>
-      <p class="sidebar-credit">Motor base: Vostok Labs · Herramienta personalizada por SHAMMAH 3D</p>
-    </div>
-  `;
+  sidebarRight.innerHTML = '';
 
   const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -233,9 +193,25 @@ export function createUi(
   }
   const diseno = disenoPanel.mount(disenoHost, cb);
 
-  $('undoBtn')?.addEventListener('click', () => cb.onUndo());
-  $('redoBtn')?.addEventListener('click', () => cb.onRedo());
-  $('refreshBtn')?.addEventListener('click', () => cb.onRefresh());
+  // Panel Exportar: sin `shell` se monta en la barra derecha, donde estaba el botón de descarga.
+  let exportarHost: HTMLElement;
+  if (shell) exportarHost = shell.panelHost('exportar');
+  else {
+    exportarHost = document.createElement('div');
+    sidebarRight.appendChild(exportarHost);
+  }
+  const exportar = exportarPanel.mount(exportarHost, cb);
+
+  // Acciones de la barra superior (historial, proyecto, ayuda, tema). Sin `shell` van al final
+  // de la barra izquierda. `onHelp` conserva el aviso del tutorial hasta que se retire (tarea 10).
+  let topbarHost: HTMLElement;
+  if (shell) topbarHost = shell.topbarActionsEl;
+  else {
+    topbarHost = document.createElement('div');
+    topbarHost.className = 'btn-row';
+    sidebarLeft.appendChild(topbarHost);
+  }
+  const topbar = mountTopbarActions(topbarHost, cb, { onHelp: () => showTutorialPrompt() });
 
   // Soltar un archivo en cualquier parte de la ventana lo enruta según su tipo. Se queda aquí
   // (no en el panel Diseño) porque es global a la app y los paneles no tienen desmontaje.
@@ -272,27 +248,6 @@ export function createUi(
     if (t) cb.onView(t.dataset.view as ViewMode);
   });
   $<HTMLInputElement>('showswitch').addEventListener('change', (e) => cb.onShowSwitch((e.target as HTMLInputElement).checked));
-
-  $('export').addEventListener('click', () => cb.onExport());
-  $('saveProj').addEventListener('click', () => cb.onSaveProject());
-  const projFile = $<HTMLInputElement>('projFile');
-  $('loadProj').addEventListener('click', () => projFile.click());
-  projFile.addEventListener('change', () => {
-    if (projFile.files?.[0]) cb.onLoadProject(projFile.files[0]);
-    projFile.value = '';
-  });
-
-  const themeLabel = $('themeLabel');
-  const syncThemeLabel = () => {
-    const isLight = document.documentElement.getAttribute('data-theme') === 'light';
-    themeLabel.textContent = isLight ? 'Modo Oscuro' : 'Modo Claro';
-  };
-  syncThemeLabel();
-  $('themeToggle').addEventListener('click', () => {
-    const current = document.documentElement.getAttribute('data-theme');
-    cb.onThemeChange(current === 'light' ? 'dark' : 'light');
-    syncThemeLabel();
-  });
 
   const tipBubble = document.createElement('div');
   tipBubble.className = 'help-tip-bubble';
@@ -630,7 +585,6 @@ export function createUi(
   }
 
   showWelcome();
-  $('helpToggle').addEventListener('click', showTutorialPrompt);
 
   function update(state: UiState) {
     statusEl.innerHTML = (state.building ? '<span class="spinner"></span> ' : '') + state.status;
@@ -639,13 +593,13 @@ export function createUi(
     llavero.update(state);
     colores.update(state);
     diseno.update(state);
+    exportar.update(state);
+    topbar.update(state);
     viewportTools?.update(state);
 
     $<HTMLInputElement>('showswitch').checked = state.showSwitch;
 
     for (const b of viewTabs.querySelectorAll<HTMLElement>('button')) b.classList.toggle('active', b.dataset.view === state.view);
-    const exportBtn = $<HTMLButtonElement>('export');
-    exportBtn.disabled = !state.hasParts || state.building;
 
     const overlay = $('loadingOverlay');
     if (overlay) {
@@ -657,13 +611,6 @@ export function createUi(
         overlay.setAttribute('hidden', '');
       }
     }
-
-    const undoBtn = document.getElementById('undoBtn') as HTMLButtonElement | null;
-    const redoBtn = document.getElementById('redoBtn') as HTMLButtonElement | null;
-    const refreshBtn = document.getElementById('refreshBtn') as HTMLButtonElement | null;
-    if (undoBtn) undoBtn.disabled = !state.canUndo;
-    if (redoBtn) redoBtn.disabled = !state.canRedo;
-    if (refreshBtn) refreshBtn.disabled = !state.canRefresh;
 
     const extrudeTooltipEl = document.getElementById('extrudeTooltip');
     if (extrudeTooltipEl) extrudeTooltipEl.classList.toggle('hidden', state.editMode !== 'extrude');
