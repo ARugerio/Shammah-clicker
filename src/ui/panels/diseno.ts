@@ -2,33 +2,11 @@ import type { UiCallbacks, UiState } from '../ui';
 import type { PanelHandle, PanelModule } from '../shell/types';
 import type { FontOption } from '../../image/letter';
 import { FONT_OPTIONS, loadBundledFonts } from '../../image/letter';
-import { LUCIDE_ICONS, buildSvg, svgDataUrl } from '../../image/lucideIcons';
 import { SAMPLES } from '../../image/sample';
 
 type ImportMode = UiState['importMode'];
-type LucideIcon = (typeof LUCIDE_ICONS)[number];
-
-const POPULAR_LUCIDE = [
-  'copy', 'clipboard', 'clipboard-paste', 'scissors', 'trash-2', 'save',
-  'file', 'files', 'folder', 'folder-open', 'archive', 'download', 'upload',
-  'undo-2', 'redo-2', 'search', 'replace', 'eraser', 'pencil', 'type',
-  'bold', 'italic', 'underline',
-  'home', 'arrow-up', 'arrow-down', 'arrow-left', 'arrow-right',
-  'corner-down-left', 'chevron-up', 'chevron-down',
-  'keyboard', 'mouse', 'command', 'delete',
-  'play', 'pause', 'skip-back', 'skip-forward', 'volume-2', 'volume-x',
-  'mic', 'mic-off', 'music', 'headphones',
-  'sun', 'moon', 'monitor', 'lock', 'unlock', 'eye', 'eye-off',
-  'power', 'wifi', 'bluetooth', 'battery',
-  'terminal', 'code', 'settings', 'bell', 'calendar', 'mail',
-  'message-circle', 'phone', 'camera', 'image',
-  'star', 'heart', 'circle', 'bookmark', 'flag', 'check', 'x', 'plus', 'minus',
-  'refresh-cw', 'rotate-cw', 'flame', 'zap', 'rocket', 'ghost', 'skull',
-  'coffee', 'gamepad-2', 'trophy', 'crown',
-];
-
-/** Iconos de Lucide que se pintan por tanda; el resto queda tras "Mostrar más". */
-const GALLERY_PAGE = 240;
+/** Modos con tarjeta y sub-panel propios: el modo 'icon' ya no se ofrece. */
+type PanelMode = Exclude<ImportMode, 'icon'>;
 
 // `importTabs` conserva su id porque el tutorial lo señala. Los interruptores "Eliminar fondo"
 // (`removebg`, `removebgSvg`) son el paso de limpieza de la imagen y del SVG.
@@ -55,17 +33,6 @@ const TEMPLATE = `
           </svg>
         </span>
         <span class="card-label">SVG</span>
-      </button>
-      <button class="import-card" data-mode="icon" type="button">
-        <span class="card-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"/>
-            <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
-            <line x1="9" y1="9" x2="9.01" y2="9"/>
-            <line x1="15" y1="9" x2="15.01" y2="9"/>
-          </svg>
-        </span>
-        <span class="card-label">Icono</span>
       </button>
       <button class="import-card" data-mode="text" type="button">
         <span class="card-icon">
@@ -118,16 +85,6 @@ const TEMPLATE = `
         </div>
       </div>
       <button class="primary" id="generateSvg" style="margin-top: 10px; width: 100%;">Generar Geometría</button>
-    </div>
-
-    <div id="iconPanel" class="mode-panel" hidden>
-      <div id="iconSearchWrap">
-        <input id="iconSearch" type="search" placeholder="Buscar iconos libres…" autocomplete="off" spellcheck="false" />
-        <button id="iconSearchClear" type="button">×</button>
-      </div>
-      <div id="iconCount"></div>
-      <div id="gallery"></div>
-      <button class="primary" id="generateIcon" style="margin-top: 10px; width: 100%;">Generar Geometría</button>
     </div>
 
     <div id="letterPanel" class="mode-panel" hidden>
@@ -253,97 +210,6 @@ export const disenoPanel = {
 
     $('generateSvg').addEventListener('click', () => cb.onGenerate());
 
-    // ---- Icono: galería Lucide con búsqueda ----
-    const galleryEl = $('gallery');
-    const searchEl = $<HTMLInputElement>('iconSearch');
-    const searchClearEl = $<HTMLButtonElement>('iconSearchClear');
-    const countEl = $('iconCount');
-
-    let lucideShown = 0;
-    let lucideMatches: LucideIcon[] = [];
-    let moreBtn: HTMLButtonElement | null = null;
-
-    function rankLucide(query: string): LucideIcon[] {
-      const q = query.trim().toLowerCase();
-      if (!q) {
-        const popularSet = new Set(POPULAR_LUCIDE);
-        const popular = POPULAR_LUCIDE
-          .map((name) => LUCIDE_ICONS.find((ic) => ic.name === name))
-          .filter((ic): ic is LucideIcon => !!ic);
-        const rest = LUCIDE_ICONS.filter((ic) => !popularSet.has(ic.name));
-        return popular.concat(rest);
-      }
-      const out: { ic: LucideIcon; rank: number }[] = [];
-      for (const ic of LUCIDE_ICONS) {
-        const i = ic.name.indexOf(q);
-        if (i === -1) continue;
-        const rank = ic.name === q ? 0 : i === 0 ? 1 : 2;
-        out.push({ ic, rank });
-      }
-      out.sort((a, b) => a.rank - b.rank || a.ic.name.localeCompare(b.ic.name));
-      return out.map((o) => o.ic);
-    }
-
-    function renderLucidePage() {
-      if (moreBtn) { moreBtn.remove(); moreBtn = null; }
-      const end = Math.min(lucideShown + GALLERY_PAGE, lucideMatches.length);
-      const frag = document.createDocumentFragment();
-      for (let i = lucideShown; i < end; i++) {
-        const ic = lucideMatches[i];
-        const svgText = buildSvg(ic.node);
-        const el = makeIconEl(svgDataUrl(svgText), ic.name, (clickedEl) => {
-          galleryEl.querySelectorAll('.icon').forEach((n) => n.classList.remove('active'));
-          clickedEl.classList.add('active');
-          cb.onSelectIcon(svgText, ic.name);
-        });
-        frag.appendChild(el);
-      }
-      galleryEl.appendChild(frag);
-      lucideShown = end;
-
-      if (lucideShown < lucideMatches.length) {
-        moreBtn = document.createElement('button');
-        moreBtn.id = 'galleryMore';
-        moreBtn.type = 'button';
-        moreBtn.textContent = `Mostrar ${Math.min(GALLERY_PAGE, lucideMatches.length - lucideShown)} más (${lucideMatches.length - lucideShown} ocultos)`;
-        moreBtn.addEventListener('click', renderLucidePage);
-        galleryEl.appendChild(moreBtn);
-      }
-      updateCount();
-    }
-
-    function updateCount() {
-      const total = lucideMatches.length;
-      if (total === 0) {
-        countEl.textContent = 'Sin resultados.';
-      } else {
-        const visible = Math.min(lucideShown, total);
-        countEl.textContent = `${total} iconos` + (visible < total ? ` · mostrando ${visible}` : '');
-      }
-    }
-
-    function rebuildGallery() {
-      galleryEl.innerHTML = '';
-      lucideShown = 0;
-      lucideMatches = rankLucide(searchEl.value);
-      searchClearEl.style.display = searchEl.value ? 'block' : 'none';
-      renderLucidePage();
-    }
-
-    let searchTimer: number | null = null;
-    searchEl.addEventListener('input', () => {
-      if (searchTimer !== null) clearTimeout(searchTimer);
-      searchTimer = window.setTimeout(rebuildGallery, 80);
-    });
-    searchClearEl.addEventListener('click', () => {
-      searchEl.value = '';
-      rebuildGallery();
-      searchEl.focus();
-    });
-    rebuildGallery();
-
-    $('generateIcon').addEventListener('click', () => cb.onGenerate());
-
     // ---- Texto: campo, rejilla de fuentes e importación ----
     const letterText = $<HTMLTextAreaElement>('letterText');
     const fontGrid = $('fontGrid');
@@ -378,10 +244,9 @@ export const disenoPanel = {
 
     $('generateText').addEventListener('click', () => cb.onGenerate());
 
-    const subPanels: Record<ImportMode, HTMLElement> = {
+    const subPanels: Record<PanelMode, HTMLElement> = {
       image: $('imagePanel'),
       svg: $('svgPanel'),
-      icon: $('iconPanel'),
       text: $('letterPanel'),
     };
 
@@ -391,12 +256,10 @@ export const disenoPanel = {
         removebg.checked = state.removeBg;
         removebgSvg.checked = state.removeBg;
 
-        for (const b of importTabs.querySelectorAll<HTMLElement>('[data-mode]')) b.classList.toggle('active', b.dataset.mode === state.importMode);
-        for (const mode of Object.keys(subPanels) as ImportMode[]) subPanels[mode].hidden = state.importMode !== mode;
-
-        if (state.currentIconName) {
-          galleryEl.querySelectorAll('.icon').forEach((n) => n.classList.toggle('active', n.getAttribute('title') === state.currentIconName));
-        }
+        // 'icon' sigue en el contrato (proyectos guardados antiguos): se muestra el panel Imagen.
+        const shown: PanelMode = state.importMode === 'icon' ? 'image' : state.importMode;
+        for (const b of importTabs.querySelectorAll<HTMLElement>('[data-mode]')) b.classList.toggle('active', b.dataset.mode === shown);
+        for (const mode of Object.keys(subPanels) as PanelMode[]) subPanels[mode].hidden = mode !== shown;
       },
       addUploadedSvg,
       addFontOption(font: FontOption) {

@@ -12,7 +12,7 @@ let calls: ReturnType<typeof makeCallbacks>['calls'];
 let handle: DisenoHandle;
 
 const $ = <T extends HTMLElement>(id: string) => host.querySelector<T>('#' + id)!;
-const SUBPANELS = { image: 'imagePanel', svg: 'svgPanel', icon: 'iconPanel', text: 'letterPanel' } as const;
+const SUBPANELS = { image: 'imagePanel', svg: 'svgPanel', text: 'letterPanel' } as const;
 type Mode = keyof typeof SUBPANELS;
 
 beforeEach(() => {
@@ -126,25 +126,28 @@ describe('disenoPanel', () => {
     expect(first.classList.contains('active')).toBe(true);
   });
 
-  it('la galería de iconos lista iconos y elegir uno llama onSelectIcon', () => {
-    const icon = $('gallery').querySelector<HTMLElement>('.icon')!;
-    expect(icon).not.toBeNull();
-    icon.click();
-    expect(calls.onSelectIcon).toHaveLength(1);
-    expect(calls.onSelectIcon[0][1]).toBe(icon.title);
-    expect($('iconCount').textContent).toMatch(/iconos/);
+  it('solo hay tres tarjetas de origen: image, svg y text, sin icono ni galería', () => {
+    const modes = [...host.querySelectorAll<HTMLElement>('#importTabs [data-mode]')].map((b) => b.dataset.mode);
+    expect(modes).toEqual(['image', 'svg', 'text']);
+    expect(host.querySelector('#iconPanel')).toBeNull();
+    expect(host.querySelector('#gallery')).toBeNull();
+    expect(host.querySelector('#iconSearch')).toBeNull();
+    expect(host.querySelector('#generateIcon')).toBeNull();
+    expect(host.querySelector('.lucide')).toBeNull();
+    expect(host.textContent).not.toMatch(/Icono/);
   });
 
-  it('update() marca el icono actual de la galería', () => {
-    handle.update(makeUiState({ importMode: 'icon', currentIconName: 'heart' }));
-    const active = $('gallery').querySelectorAll('.icon.active');
-    expect(active.length).toBe(1);
-    expect(active[0].getAttribute('title')).toBe('heart');
+  it("update() con importMode 'icon' (proyecto antiguo) no falla y muestra el panel Imagen", () => {
+    expect(() => handle.update(makeUiState({ importMode: 'icon' }))).not.toThrow();
+    expect($('imagePanel').hidden).toBe(false);
+    expect($('svgPanel').hidden).toBe(true);
+    expect($('letterPanel').hidden).toBe(true);
+    expect(host.querySelector('#importTabs .active')!.getAttribute('data-mode')).toBe('image');
   });
 
   it('los botones Generar llaman onGenerate', () => {
-    for (const id of ['generateSvg', 'generateIcon', 'generateText']) $(id).click();
-    expect(calls.onGenerate).toHaveLength(3);
+    for (const id of ['generateSvg', 'generateText']) $(id).click();
+    expect(calls.onGenerate).toHaveLength(2);
   });
 });
 
@@ -163,7 +166,7 @@ describe('createUi y el panel Diseño', () => {
     const { shell, calls } = mountUi();
     const dock = shell.panelHost('diseno');
     expect(dock.querySelector('#importTabs')).not.toBeNull();
-    for (const id of ['importTabs', 'letterText', 'removebg', 'fontGrid', 'gallery', 'uploadGallery']) {
+    for (const id of ['importTabs', 'letterText', 'removebg', 'fontGrid', 'uploadGallery']) {
       expect(document.querySelectorAll('#' + id).length).toBe(1);
     }
     expect(dock.querySelector<HTMLElement>('#svgPanel')!.hidden).toBe(false);
