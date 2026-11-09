@@ -112,7 +112,10 @@
   /* Las herramientas flotantes quedan por encima de la hoja del dock (z-index 30) para seguir usables. */
   #viewport .edges-panel, #viewport .edit-mode-bar { z-index: 35; }
   #viewport .edges-panel { max-height: 45vh; overflow-y: auto; }
-  /* El dock ocupa todo el ancho: se sube un poco y el crédito ocupa la franja libre bajo él (no la cubre la hoja). */
+}
+/* Hasta 1280px el dock centrado invade el crédito alineado a la izquierda: se sube un poco y el crédito
+   ocupa la franja libre bajo él, centrado (en móvil la hoja del dock tampoco lo cubre). */
+@media (max-width: 1280px) {
   .dock-wrap { bottom: calc(var(--space-3) + env(safe-area-inset-bottom, 0px)); }
   #status { bottom: 112px; }
   #viewport .edges-panel { bottom: 112px; }
