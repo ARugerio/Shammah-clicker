@@ -1004,7 +1004,9 @@ function firstLine(s: string): string {
   return s.split('\n')[0];
 }
 
-// SHAMMAH Studio - License system removed (proprietary, no third-party attribution)
+// SHAMMAH Studio - Herramienta propietaria de SHAMMAH 3D basada en el motor de
+// Vostok Labs (uso bajo licencia comercial). El crédito visible está en el pie de
+// la barra lateral (ui.ts) y el detalle de licencias en CREDITS.md.
 
 // ---- Render / project save-load / AI prompt ----
 function downloadBlob(blob: Blob, fileName: string) {

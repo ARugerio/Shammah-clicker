@@ -1622,6 +1622,14 @@ button.fil-chip:active {
   line-height: 1.2;
 }
 
+.sidebar-credit {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.4;
+  text-align: center;
+  color: var(--muted, #94a3b8);
+}
+
 /* Sticky footer in sidebars for action buttons */
 .sidebar-sticky-footer {
   margin-top: auto;

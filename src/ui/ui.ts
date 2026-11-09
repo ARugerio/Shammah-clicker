@@ -523,6 +523,7 @@ export function createUi(
           </button>
         </div>
       </div>
+      <p class="sidebar-credit">Motor base: Vostok Labs · Herramienta personalizada por SHAMMAH 3D</p>
     </div>
   `;
 
