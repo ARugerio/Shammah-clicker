@@ -6,9 +6,8 @@ import type { FontOption } from '../image/letter';
 import { FONT_OPTIONS, loadBundledFonts } from '../image/letter';
 import { LUCIDE_ICONS, buildSvg, svgDataUrl } from '../image/lucideIcons';
 import type { Shell } from './shell/types';
-
-/** Tolerancia neutra base (mm). El control muestra la desviación sobre este número. */
-const BASE_SOCKET_TOL = 0.4;
+import { formaPanel } from './panels/forma';
+import { tip, bindValInput } from './shared/controls';
 
 export interface UiState {
   status: string;
@@ -145,11 +144,8 @@ export function createUi(
   sidebarRight: HTMLElement,
   statusEl: HTMLElement,
   cb: UiCallbacks,
-  _shell?: Shell
+  shell?: Shell
 ) {
-  const tip = (text: string) =>
-    `<span class="help-tip" tabindex="0" role="img" aria-label="Ayuda: ${text.replace(/"/g, '&quot;')}" data-tip="${text.replace(/"/g, '&quot;')}">?</span>`;
-
   // Barra Lateral Izquierda
   sidebarLeft.innerHTML = `
     <div class="app-header">
@@ -171,34 +167,6 @@ export function createUi(
       <div class="switch-row">
         <span class="switch-label">Mostrar switch MX ${tip('Muestra un interruptor MX de referencia. No se exportará al modelo 3MF.')}</span>
         <label class="toggle"><input id="showswitch" type="checkbox" /><span class="slider"></span></label>
-      </div>
-    </div>
-
-    <div class="section" id="baseStyleSection">
-      <span class="label">Estilo de base ${tip('Contorno recorta la silueta exacta; Forma ubica tu diseño sobre una base sólida predefinida.')}</span>
-      <div class="field">
-        <div class="tabs" id="shapeTypeTabs" role="tablist" style="margin-bottom: 12px;">
-          <button class="tab" data-style="outline" type="button">Contorno</button>
-          <button class="tab" data-style="shape" type="button">Forma</button>
-        </div>
-      </div>
-      <div class="field" id="shapeSelectField" style="margin-bottom: 12px;">
-        <label for="shapeSelect">Geometría de la forma</label>
-        <select id="shapeSelect">
-          <option value="circle">Círculo</option>
-          <option value="square">Cuadrado</option>
-          <option value="hexagon">Hexágono</option>
-          <option value="heart">Corazón</option>
-          <option value="star">Estrella</option>
-          <option value="egg">Huevo</option>
-        </select>
-      </div>
-      <div class="prow-stacked">
-        <div class="prow-header">
-          <label for="width">Tamaño general ${tip('Longitud máxima de la pieza final (en mm). Escala todo el modelo proporcionalmente.')}</label>
-          <input type="text" class="val" id="widthVal" />
-        </div>
-        <input type="range" id="width" min="20" max="70" step="1" />
       </div>
     </div>
 
@@ -297,40 +265,6 @@ export function createUi(
           </div>
         </div>
 
-        <div class="prow-stacked">
-          <div class="prow-header">
-            <label for="topthick">Grosor de respaldo ${tip('Grosor de la base sólida debajo de los colores de la imagen, en mm.')}</label>
-            <input type="text" class="val" id="topthickVal" />
-          </div>
-          <input type="range" id="topthick" min="1" max="4" step="0.1" />
-        </div>
-        <div class="prow-stacked">
-          <div class="prow-header">
-            <label for="imgdepth">Relieve del color ${tip('Altura a la que se extruyen los colores por encima de la base, en mm.')}</label>
-            <input type="text" class="val" id="imgdepthVal" />
-          </div>
-          <input type="range" id="imgdepth" min="0.2" max="3" step="0.1" />
-        </div>
-        <div class="prow-stacked">
-          <div class="prow-header">
-            <label>Holgura de deslizamiento (Zócalo MX) ${tip('Controla la fricción entre la tapa y la base. (+) afloja, (−) aprieta. Por defecto 0 (0.4mm reales).')}</label>
-          </div>
-          <div class="tol-stepper" id="socketTolStepper">
-            <button class="btn" id="socketTolMinus" type="button">−</button>
-            <span class="tol-val" id="socketTolVal">0.00 mm</span>
-            <button class="btn" id="socketTolPlus" type="button">+</button>
-          </div>
-        </div>
-        <div class="prow-stacked">
-          <div class="prow-header">
-            <label>Tolerancia de la cruz (Vástago MX) ${tip('Ajusta el agarre del switch en la tapa. (+) afloja, (−) aprieta. Recomendado +0.05mm si se quiebra al entrar.')}</label>
-          </div>
-          <div class="tol-stepper" id="stemTolStepper">
-            <button class="btn" id="stemTolMinus" type="button">−</button>
-            <span class="tol-val" id="stemTolVal">0.0 mm</span>
-            <button class="btn" id="stemTolPlus" type="button">+</button>
-          </div>
-        </div>
         </div>
       </details>
 
@@ -530,6 +464,16 @@ export function createUi(
   `;
 
   const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
+
+  // Panel Forma: con `shell` vive en el dock; sin él (contrato antiguo) se monta en un
+  // contenedor dentro de la barra izquierda, en el mismo sitio donde estaba antes.
+  let formaHost: HTMLElement;
+  if (shell) formaHost = shell.panelHost('forma');
+  else {
+    formaHost = document.createElement('div');
+    sidebarLeft.insertBefore(formaHost, $('geometrySettingsContainer'));
+  }
+  const forma = formaPanel.mount(formaHost, cb);
 
   $('undoBtn')?.addEventListener('click', () => cb.onUndo());
   $('redoBtn')?.addEventListener('click', () => cb.onRedo());
@@ -838,28 +782,6 @@ export function createUi(
   const smooth = $<HTMLInputElement>('smooth');
   smooth.addEventListener('input', () => cb.onSmoothing(+smooth.value));
 
-  const shapeTypeTabs = $('shapeTypeTabs');
-  const shapeSelect = $<HTMLSelectElement>('shapeSelect');
-  shapeTypeTabs.addEventListener('click', (e) => {
-    const t = (e.target as HTMLElement).closest('[data-style]') as HTMLElement | null;
-    if (!t) return;
-    if (t.dataset.style === 'outline') cb.onShape('outline');
-    else cb.onShape(shapeSelect.value as BaseShapeKind);
-  });
-  shapeSelect.addEventListener('change', () => cb.onShape(shapeSelect.value as BaseShapeKind));
-
-  const width = $<HTMLInputElement>('width');
-  width.addEventListener('input', () => cb.onWidth(+width.value));
-  const topthick = $<HTMLInputElement>('topthick');
-  topthick.addEventListener('input', () => cb.onTopThickness(+topthick.value));
-  const imgdepth = $<HTMLInputElement>('imgdepth');
-  imgdepth.addEventListener('input', () => cb.onImageDepth(+imgdepth.value));
-
-  $('socketTolMinus').addEventListener('click', () => cb.onSocketTolStep(-0.05));
-  $('socketTolPlus').addEventListener('click', () => cb.onSocketTolStep(0.05));
-  $('stemTolMinus').addEventListener('click', () => cb.onStemTolStep(-0.2));
-  $('stemTolPlus').addEventListener('click', () => cb.onStemTolStep(0.2));
-
   const SWITCH_STEP = 1;
   const switchPad = $('switchPad');
   switchPad.addEventListener('click', (e) => {
@@ -914,25 +836,7 @@ export function createUi(
     }
   });
 
-  function bindValInput(valId: string, slider: HTMLInputElement, callback: (v: number) => void, parse?: (raw: number) => number) {
-    const el = $<HTMLInputElement>(valId);
-    const commit = () => {
-      const raw = parseFloat(el.value.replace(/[^0-9.\-]/g, ''));
-      if (isNaN(raw)) return;
-      const v = parse ? parse(raw) : raw;
-      const clamped = Math.max(parseFloat(slider.min), Math.min(parseFloat(slider.max), v));
-      slider.value = String(clamped);
-      callback(clamped);
-    };
-    el.addEventListener('focus', () => el.select());
-    el.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); commit(); el.blur(); } });
-    el.addEventListener('blur', commit);
-  }
-
   bindValInput('smoothVal', smooth, cb.onSmoothing, (v) => v / 100);
-  bindValInput('widthVal', width, cb.onWidth);
-  bindValInput('topthickVal', topthick, cb.onTopThickness);
-  bindValInput('imgdepthVal', imgdepth, cb.onImageDepth);
 
   const viewTabs = $('viewTabs');
   viewTabs.addEventListener('click', (e) => {
@@ -1451,18 +1355,8 @@ export function createUi(
     };
     smooth.value = String(state.smoothing);
     setVal('smoothVal', Math.round(state.smoothing * 100) + '%');
-    width.value = String(state.capWidthMm);
-    setVal('widthVal', state.capWidthMm + ' mm');
-    topthick.value = String(state.topThickness);
-    setVal('topthickVal', state.topThickness.toFixed(1) + ' mm');
-    imgdepth.value = String(state.imageDepth);
-    setVal('imgdepthVal', state.imageDepth.toFixed(1) + ' mm');
+    forma.update(state);
 
-    const fmtSigned = (v: number, dec: number) => (v > 0.0001 ? '+' : v < -0.0001 ? '−' : '') + Math.abs(v).toFixed(dec) + ' mm';
-    const socketValEl = document.getElementById('socketTolVal');
-    if (socketValEl) socketValEl.textContent = fmtSigned(state.tolerance - BASE_SOCKET_TOL, 2);
-    const stemValEl = document.getElementById('stemTolVal');
-    if (stemValEl) stemValEl.textContent = fmtSigned(state.stemTolerance, 1);
     
     const switchCountN = state.switches.length;
     const activeIdx = Math.min(state.activeSwitchIndex, switchCountN - 1);
@@ -1521,13 +1415,6 @@ export function createUi(
     const smoothingField = $('smoothingField');
     if (ccountField) ccountField.style.display = showSmoothingAndBg ? 'grid' : 'none';
     if (smoothingField) smoothingField.style.display = showSmoothingAndBg ? 'grid' : 'none';
-
-    const outlineTab = shapeTypeTabs.querySelector<HTMLElement>('[data-style="outline"]');
-    if (outlineTab) outlineTab.style.display = state.importMode === 'icon' ? 'none' : '';
-    const treatAsOutline = state.baseShape === 'outline' && state.importMode !== 'icon';
-    for (const btn of shapeTypeTabs.querySelectorAll<HTMLElement>('button')) btn.classList.toggle('active', btn.dataset.style === (treatAsOutline ? 'outline' : 'shape'));
-    if (treatAsOutline) shapeSelect.disabled = true;
-    else { shapeSelect.disabled = false; shapeSelect.value = state.baseShape === 'outline' ? 'circle' : state.baseShape; }
 
     for (const b of viewTabs.querySelectorAll<HTMLElement>('button')) b.classList.toggle('active', b.dataset.view === state.view);
     const exportBtn = $<HTMLButtonElement>('export');
