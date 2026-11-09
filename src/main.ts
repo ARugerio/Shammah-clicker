@@ -13,7 +13,7 @@ import { processImage } from './image/pipeline';
 import { runWizard } from './ui/wizard';
 import { downloadThreeMF } from './export/threemfExport';
 import { parseSvg } from './image/logo';
-import { SAMPLES, SVG_SAMPLES } from './image/sample';
+import { SAMPLES, SVG_SAMPLES, describeLoadError } from './image/sample';
 import { parseLetter, importFontFile } from './image/letter';
 import { LUCIDE_ICONS, buildSvg } from './image/lucideIcons';
 import type {
@@ -830,7 +830,7 @@ async function openWizard(getter: () => Promise<RgbaImage>) {
       },
     });
   } catch (err) {
-    store.set({ building: false, status: 'No se pudo leer la imagen: ' + String(err) });
+    store.set({ building: false, status: describeLoadError(err) });
   }
 }
 

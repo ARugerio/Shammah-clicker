@@ -13,20 +13,40 @@ export interface SampleInfo {
   load: () => Promise<RgbaImage>;
 }
 
+/** Error al descargar una muestra: su mensaje ya es apto para mostrarse tal cual al usuario. */
+export class SampleLoadError extends Error {
+  constructor(name: string, detail?: string) {
+    super(
+      detail ??
+        `No se pudo cargar la muestra "${name}". Revisa tu conexión o recarga la página e inténtalo de nuevo.`,
+    );
+    this.name = 'SampleLoadError';
+  }
+}
+
+/** Texto de estado para un fallo al abrir una imagen: sin "Error:" y sin prefijo para las muestras. */
+export function describeLoadError(err: unknown): string {
+  if (err instanceof SampleLoadError) return err.message;
+  return 'No se pudo leer la imagen: ' + (err instanceof Error ? err.message : String(err));
+}
+
 // createImageBitmap no decodifica SVG de forma fiable, así que se dibuja en un canvas con fondo blanco.
-async function rasterizeSvg(src: string): Promise<RgbaImage> {
+async function rasterizeSvg(src: string, name: string): Promise<RgbaImage> {
   const img = new Image();
   img.decoding = 'async';
   await new Promise<void>((resolve, reject) => {
     img.onload = () => resolve();
-    img.onerror = () => reject(new Error(`No se pudo cargar la muestra: ${src}`));
+    img.onerror = () => reject(new SampleLoadError(name));
     img.src = src;
   });
   const canvas = document.createElement('canvas');
   canvas.width = RASTER_SIZE;
   canvas.height = RASTER_SIZE;
   const ctx = canvas.getContext('2d', { willReadFrequently: true });
-  if (!ctx) throw new Error('No se pudo crear el lienzo para la muestra');
+  if (!ctx) throw new SampleLoadError(
+      name,
+      `No se pudo preparar la muestra "${name}" en este navegador.`,
+    );
   ctx.fillStyle = '#ffffff';
   ctx.fillRect(0, 0, RASTER_SIZE, RASTER_SIZE);
   ctx.drawImage(img, 0, 0, RASTER_SIZE, RASTER_SIZE);
@@ -36,7 +56,7 @@ async function rasterizeSvg(src: string): Promise<RgbaImage> {
 
 function sample(file: string, name: string): SampleInfo {
   const src = SAMPLE_DIR + file;
-  return { name, src, load: () => rasterizeSvg(src) };
+  return { name, src, load: () => rasterizeSvg(src, name) };
 }
 
 export const SAMPLES: SampleInfo[] = [
