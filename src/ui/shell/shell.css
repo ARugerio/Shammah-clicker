@@ -12,6 +12,13 @@
 #viewport { position: absolute; inset: 0; height: auto; background: var(--t-fondo); }
 .viewer-controls { position: absolute; top: var(--space-2); left: var(--space-2); z-index: 12; }
 .viewer-controls:empty { display: none; }
+/* Crédito persistente: píldora con fondo propio para que el contraste no dependa del visor 3D. */
+.viewport-credit {
+  position: absolute; left: var(--space-1); bottom: var(--space-1); z-index: 12; margin: 0;
+  max-width: calc(100vw - 16px); white-space: nowrap; padding: 3px 8px; font-size: 11px; line-height: 1.4;
+  color: var(--t-texto); background: color-mix(in srgb, var(--t-superficie) 90%, transparent);
+  border: 1px solid var(--t-borde); border-radius: var(--radius-sm); pointer-events: none;
+}
 
 #status {
   left: 50%; transform: translateX(-50%); bottom: 88px; z-index: 15;
@@ -99,7 +106,18 @@
   max-width: min(380px, calc(100vw - 32px)); min-width: 0; box-sizing: border-box;
 }
 @media (max-width: 720px) {
-  #viewport .edges-panel { right: var(--space-2); left: var(--space-2); max-width: none; bottom: 88px; }
+  #viewport .edges-panel { right: var(--space-2); left: var(--space-2); max-width: none; }
   /* Debajo de la barra de modos y del interruptor de letras, que están centrados arriba. */
   .viewer-controls { top: 112px; }
+  /* Las herramientas flotantes quedan por encima de la hoja del dock (z-index 30) para seguir usables. */
+  #viewport .edges-panel, #viewport .edit-mode-bar { z-index: 35; }
+  #viewport .edges-panel { max-height: 45vh; overflow-y: auto; }
+  /* El dock ocupa todo el ancho: se sube un poco y el crédito ocupa la franja libre bajo él (no la cubre la hoja). */
+  .dock-wrap { bottom: calc(var(--space-3) + env(safe-area-inset-bottom, 0px)); }
+  #status { bottom: 112px; }
+  #viewport .edges-panel { bottom: 112px; }
+  .viewport-credit {
+    left: 50%; transform: translateX(-50%); bottom: calc(4px + env(safe-area-inset-bottom, 0px));
+    width: max-content; max-width: calc(100vw - 16px); font-size: 10px; padding: 2px 6px; white-space: nowrap;
+  }
 }

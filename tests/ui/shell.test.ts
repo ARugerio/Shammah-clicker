@@ -104,3 +104,24 @@ describe('createShell', () => {
     second.dispose();
   });
 });
+
+describe('crédito persistente y accesibilidad de enlaces', () => {
+  const CREDIT = 'Motor base: Vostok Labs · Herramienta personalizada por SHAMMAH 3D';
+
+  it.each(['light', 'dark'])('el crédito aparece una vez en el visor, fuera del dock (tema %s)', (theme) => {
+    document.documentElement.setAttribute('data-theme', theme);
+    const all = Array.from(root.querySelectorAll('*')).filter(
+      (el) => el.children.length === 0 && el.textContent === CREDIT,
+    );
+    expect(all.length).toBe(1);
+    expect(shell.viewportEl.contains(all[0])).toBe(true);
+    expect(all[0].closest('.dock-wrap')).toBeNull();
+    expect(all[0].closest('.viewport-credit')).not.toBeNull();
+    document.documentElement.removeAttribute('data-theme');
+  });
+
+  it('los enlaces Volver y WhatsApp tienen aria-label en español', () => {
+    expect(root.querySelector('.topbar-back')!.getAttribute('aria-label')).toBe('Volver al Mostrador');
+    expect(root.querySelector('.topbar-wa')!.getAttribute('aria-label')).toBe('Soporte por WhatsApp');
+  });
+});

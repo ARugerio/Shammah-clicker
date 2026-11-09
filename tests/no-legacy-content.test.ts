@@ -47,6 +47,15 @@ describe('assets heredados', () => {
   it('public/assets/media (imágenes de muestra e iconos sociales viejos) ya no existe', () => {
     expect(existsSync(join(ROOT, 'public/assets/media'))).toBe(false);
   });
+
+  it('public/icons (iconos sociales y de marcas ajenas) ya no existe', () => {
+    expect(existsSync(join(ROOT, 'public/icons'))).toBe(false);
+  });
+
+  it('ningún archivo de public/ se llama bambulab.svg, instagram.svg o youtube.svg', () => {
+    const hits = walk(join(ROOT, 'public')).filter((f) => /(^|\/)(bambulab|instagram|youtube)\.svg$/.test(f));
+    expect(hits.map((f) => f.replace(ROOT, ''))).toEqual([]);
+  });
 });
 
 describe('muestras propias', () => {

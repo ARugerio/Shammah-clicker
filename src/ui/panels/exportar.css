@@ -9,4 +9,4 @@
   background-color: var(--t-acento, #db2777); color: #fff;
 }
 .export-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-.export-panel .sidebar-credit { color: var(--t-apagado, #94a3b8); }
+.export-panel .sidebar-credit { color: color-mix(in srgb, var(--t-texto) 78%, var(--t-superficie)); }

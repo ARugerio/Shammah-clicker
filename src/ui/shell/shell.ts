@@ -20,12 +20,12 @@ export function createShell(root: HTMLElement): Shell {
   root.innerHTML = `
     <header id="topbar">
       <div class="topbar-group topbar-left">
-        <a class="topbar-btn topbar-back" href="https://arugerio.github.io/Shammah3d/">${BACK_ICON}<span class="topbar-label">Volver al Mostrador</span></a>
+        <a class="topbar-btn topbar-back" aria-label="Volver al Mostrador" href="https://arugerio.github.io/Shammah3d/">${BACK_ICON}<span class="topbar-label">Volver al Mostrador</span></a>
         <span class="topbar-brand">SHAMMAH Studio<span class="topbar-label"> · Bambu Lab P2S</span></span>
       </div>
       <div class="topbar-group topbar-right">
         <div class="topbar-group" data-slot="topbar-actions"></div>
-        <a class="topbar-btn topbar-wa" href="https://api.whatsapp.com/send?phone=5215559650025" target="_blank" rel="noopener noreferrer">${WA_ICON}<span class="topbar-label">Soporte WhatsApp</span></a>
+        <a class="topbar-btn topbar-wa" aria-label="Soporte por WhatsApp" href="https://api.whatsapp.com/send?phone=5215559650025" target="_blank" rel="noopener noreferrer">${WA_ICON}<span class="topbar-label">Soporte WhatsApp</span></a>
       </div>
     </header>
     <div id="layout">
@@ -33,6 +33,7 @@ export function createShell(root: HTMLElement): Shell {
         <div id="app"></div>
         <div id="status">Iniciando motor 3D...</div>
         <div class="viewer-controls" data-slot="viewer-controls"></div>
+        <p class="viewport-credit">Motor base: Vostok Labs · Herramienta personalizada por SHAMMAH 3D</p>
       </div>
       <div class="dock-wrap">
         <div class="dock-panels"></div>
