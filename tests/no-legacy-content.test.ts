@@ -10,6 +10,8 @@ const BANNED = [
   'Bienvenido a SHAMMAH Clicker Studio', 'Menú de Importación',
   'heart.png', 'paw.png', 'dog.png', 'cheese.png', 'radiation.png',
   'bambulab.svg', 'instagram.svg', 'youtube.svg',
+  'Múltiples Switches', 'Comenzar a diseñar', 'Entendido', 'Asistencia Técnica',
+  'assets/media',
 ];
 const NAMES = ['Monograma S', 'Llama', 'Rayo', 'Engrane', 'Flor'];
 const FILES = ['monograma-s', 'llama', 'rayo', 'engrane', 'flor'];
@@ -38,6 +40,12 @@ describe('contenido heredado', () => {
       for (const b of BANNED) if (text.includes(b)) hits.push(`${f.replace(ROOT, '')}: ${b}`);
     }
     expect(hits).toEqual([]);
+  });
+});
+
+describe('assets heredados', () => {
+  it('public/assets/media (imágenes de muestra e iconos sociales viejos) ya no existe', () => {
+    expect(existsSync(join(ROOT, 'public/assets/media'))).toBe(false);
   });
 });
 

@@ -24,8 +24,10 @@ lo usa bajo licencia comercial y lo personaliza y mantiene de forma independient
 Las fuentes incluidas en `public/fonts/` son de Google Fonts, bajo SIL Open Font
 License 1.1. Detalle en `public/fonts/CREDITS.md` y `public/fonts/OFL.txt`.
 
+## Diseños de muestra
+Los cinco diseños de `public/assets/samples/` (monograma S, llama, rayo, engrane y
+flor) son trabajo original de SHAMMAH 3D, dibujados desde cero para esta herramienta.
+
 ## Pendiente de confirmar con Vostok Labs
-Origen y permiso de uso de: `public/assets/switch/mx/*.3mf`,
-`public/assets/media/images/*` (imágenes de muestra) y
-`public/assets/media/svg/*` (iconos sociales). Se reemplazarán en el rediseño
-salvo que se confirme que están incluidos en la licencia.
+Origen y permiso de uso de los modelos del switch `public/assets/switch/mx/*.3mf`.
+Permanecen hasta que se confirme que están incluidos en la licencia.
