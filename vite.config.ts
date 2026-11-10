@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite';
 
 export default defineConfig({
-  base: '/Shammah-clicker-studio/',
+  base: '/Shammah-clicker/',
   worker: {
     format: 'es',
   },
